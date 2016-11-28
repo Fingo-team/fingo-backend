@@ -10,3 +10,6 @@ class UserActivity(models.Model):
     score = models.IntegerField()
     watched_movie = models.BooleanField(default=False)
     wish_movie = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("user", "movie",)

@@ -3,10 +3,9 @@ from django.db import models
 
 
 class FingoUserManager(BaseUserManager):
-    def create_user(self, email, nickname, user_img, password=None):
+    def create_user(self, email, nickname, user_img=None, password=None):
         user = FingoUser(email=email,
-                         nickname=nickname,
-                         user_img=user_img)
+                         nickname=nickname)
         user.set_password(password)
         user.save()
 

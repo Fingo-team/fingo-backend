@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from movie.management.commands import crawlingMixin
 import requests
 import time
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 
@@ -33,7 +34,7 @@ def init_naver_movie():
         for cnt, movie in enumerate(movie_arr[page_num]):
             if cnt != 0 and cnt % 10 == 0:
                 time.sleep(10)
-            crawlingMixin.insert_db(movie)
+            crawlingMixin.inser_db(movie)
             time.sleep(1)
 
 
