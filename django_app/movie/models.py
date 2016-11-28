@@ -62,6 +62,3 @@ class StillCut(models.Model):
 class BoxofficeRank(models.Model):
     rank = models.IntegerField()
     movie = models.ForeignKey(Movie)
-
-    def __str__(self):
-        return self.movie

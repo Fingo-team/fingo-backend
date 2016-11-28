@@ -17,13 +17,13 @@ from django.conf.urls import url,include
 from django.contrib import admin
 
 
-# apipatterns = [
-#     url(r'^member/', include("member.urls")),
+apipatterns = [
+    url(r'^user/', include("member.urls")),
 #     url(r'^movie/', include("movie.urls")),
-# ]
+]
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    # url(r'^api/v1.0/', include(apipatterns)),
+    url(r'^api/v1.0/', include(apipatterns)),
 ]
