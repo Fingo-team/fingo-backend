@@ -47,9 +47,6 @@ class MovieActorDetail(models.Model):
     actor = models.ForeignKey(Actor)
     role = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.movie
-
 
 class StillCut(models.Model):
     img = models.URLField()

@@ -54,7 +54,7 @@ def get_stillcuts(naver_code):
     return stillcutt_list
 
 
-def inser_db(movie_names):
+def insert_db(movie_names):
     naver_code = movie_names[0]
     movie_name = movie_names[1]
 
@@ -121,7 +121,7 @@ def create_movie_object(res_dic, naver_code):
 
             stillcut_list = get_stillcuts(naver_code)
             for img in stillcut_list:
-                StillCut.objects.get_or_create(stillcut_img=img,
+                StillCut.objects.get_or_create(img=img,
                                                defaults={
                                                    "movie": movie
                                                })

@@ -19,7 +19,7 @@ from django.contrib import admin
 
 apipatterns = [
     url(r'^user/', include("member.urls")),
-#     url(r'^movie/', include("movie.urls")),
+    url(r'^movie/', include("movie.urls")),
 ]
 
 
