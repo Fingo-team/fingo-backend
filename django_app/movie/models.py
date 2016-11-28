@@ -14,7 +14,7 @@ class Actor(models.Model):
 class Director(models.Model):
     name = models.CharField(max_length=100)
     img = models.URLField()
-    daum_code = models.IntegerField(max_length=50,
+    daum_code = models.CharField(max_length=50,
                                     unique=True)
 
     def __str__(self):
