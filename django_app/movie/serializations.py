@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from movie.models import Movie, Actor, Director, StillCut
+from movie.models import Movie, Actor, Director, StillCut, BoxofficeRank
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -44,3 +44,12 @@ class MovieDetailSerializer(serializers.ModelSerializer):
                   "first_run_date",
                   "score",
                   "nation_code",)
+
+
+class BoxOfficeRankSerializer(serializers.ModelSerializer):
+    movie = MovieDetailSerializer()
+
+    class Meta:
+        model = BoxofficeRank
+        fields = ("rank",
+                  "movie",)
