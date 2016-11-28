@@ -24,6 +24,9 @@ conf = json.loads(open(os.path.join(ROOT_DIR, ".django-settings/deploy_setting.j
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf["SECRET_KEY"]
 
+#Daum_API
+DAUM_API_KEY = conf["DAUM_API_KEY"]
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
