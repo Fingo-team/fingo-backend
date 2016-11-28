@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate
 from member.forms import FingoUserForm, UserSignupForm
 from member.models import FingoUser
 
+
 class UserLogin(APIView):
 
     def post(self, request, *args, **kwargs):
