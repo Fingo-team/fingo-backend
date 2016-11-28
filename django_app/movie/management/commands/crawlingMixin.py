@@ -54,7 +54,7 @@ def get_stillcuts(naver_code):
     return stillcutt_list
 
 
-def inser_db(movie_names):
+def insert_db(movie_names):
     naver_code = movie_names[0]
     movie_name = movie_names[1]
 

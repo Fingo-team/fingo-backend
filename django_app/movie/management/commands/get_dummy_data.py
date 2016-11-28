@@ -34,7 +34,7 @@ def init_naver_movie():
         for cnt, movie in enumerate(movie_arr[page_num]):
             if cnt != 0 and cnt % 10 == 0:
                 time.sleep(10)
-            crawlingMixin.inser_db(movie)
+            crawlingMixin.insert_db(movie)
             time.sleep(1)
 
 
