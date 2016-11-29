@@ -50,9 +50,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
 
+    'django_crontab',
+
     'member',
     'movie',
     'fingo_statistics',
+]
+
+# Crontab
+CRONJOBS = [
+    ("59 23 * * *", "django_app.movie.management.commands.get_boxoffice.init_boxoffice"),
 ]
 
 # rest_framework
