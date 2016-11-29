@@ -6,6 +6,8 @@ from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer
 
 
 class MovieDetail(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, *args, **kwargs):
         movie = Movie.objects.get(pk=kwargs.get("pk"))
         serial = MovieDetailSerializer(movie)
