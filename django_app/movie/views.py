@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,3 +26,17 @@ class BoxofficeRankList(APIView):
             "data": ranking_serial.data
         }
         return Response(ret)
+
+
+class MovieSearch(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        movie_name = request.GET.get("q")
+        try:
+            movie = Movie.objects.get(title__contains=movie_name)
+        except:
+            pass
+        finally:
+            serial = MovieDetailSerializer(movie)
+        return Response(serial.data)

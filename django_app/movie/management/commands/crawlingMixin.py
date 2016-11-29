@@ -7,6 +7,15 @@ import json
 from movie.models import Actor, StillCut, Movie, Director, MovieActorDetail
 
 
+def search_movie(movie_name):
+    req = "https://apis.daum.net/contents/movie?apikey={apikey}" \
+          "&output=json&q={movie_name}".format(apikey=settings.DAUM_API_KEY,
+                                               movie_name=movie_name)
+
+    r = requests.get(req)
+    movie_data = BeautifulSoup(r.text, "html.parser")
+
+
 def get_actor_director(url):
     r = requests.get(url)
     movie_detail_page = BeautifulSoup(r.text, "html.parser")
@@ -32,32 +41,7 @@ def get_actor_director(url):
             "directors": director_arr}
 
 
-def get_stillcuts(naver_code):
-    url = "http://movie.naver.com/movie/bi/mi/photoView.nhn?" \
-          "code={code}".format(code=naver_code)
-
-    r = requests.get(url)
-    bs = BeautifulSoup(r.text, "html.parser")
-
-    parsing_target = bs.select("li._list")[:5]
-
-    target_list = [
-        json.loads(target["data-json"])
-        for target in parsing_target
-        ]
-
-    stillcutt_list = [
-        target["fullImageUrl886px"]
-        for target in target_list
-        ]
-
-    return stillcutt_list
-
-
-def insert_db(movie_names):
-    naver_code = movie_names[0]
-    movie_name = movie_names[1]
-
+def insert_db(movie_name):
     req = "https://apis.daum.net/contents/movie?apikey={apikey}" \
           "&output=json&q={movie_name}".format(apikey=settings.DAUM_API_KEY,
                                                movie_name=movie_name)
@@ -65,11 +49,10 @@ def insert_db(movie_names):
 
     res_dic = json.loads(res.text)
 
-    return create_movie_object(res_dic=res_dic,
-                               naver_code=naver_code)
+    return create_movie_object(res_dic=res_dic)
 
 
-def create_movie_object(res_dic, naver_code):
+def create_movie_object(res_dic):
     if res_dic.get("channel") is not None and len(res_dic["channel"]["item"]) != 0:
         movie_url = res_dic["channel"]["item"][0]["story"][0]["link"]
         daum_code = movie_url.split("=")[1]
@@ -106,8 +89,7 @@ def create_movie_object(res_dic, naver_code):
                 for actor in appear_dic["actors"]
             ]
 
-            movie = Movie(naver_code=naver_code,
-                          daum_code=daum_code,
+            movie = Movie(daum_code=daum_code,
                           title=title,
                           genre=genre,
                           story=story,
@@ -119,7 +101,11 @@ def create_movie_object(res_dic, naver_code):
 
             movie.director.add(*director_arr)
 
-            stillcut_list = get_stillcuts(naver_code)
+            stillcut_list = [
+                res_dic["channel"]["item"][0]["photo"+str(i)]["content"].split("=")[1].replace("%3A", ":").replace("%2F","/")
+                for i in range(1, 6)
+            ]
+
             for img in stillcut_list:
                 StillCut.objects.get_or_create(img=img,
                                                defaults={

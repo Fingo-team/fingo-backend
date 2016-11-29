@@ -15,7 +15,7 @@ def get_boxoffice_moviename():
     movie_list = bs.select("div.tit1 > a")
 
     movie_names = [
-        (movie["href"].split("=")[1], movie.text)
+        movie.text
         for movie in movie_list
     ]
 
