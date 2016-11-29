@@ -10,20 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os
+import os,sys
+import json
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+ROOT_DIR = os.path.dirname(BASE_DIR)
+conf = json.loads(open(os.path.join(ROOT_DIR, ".django-settings/deploy_setting.json")).read())
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '8dmfa16*5ni%i)#8884_s@wq5o5u=)-t3-fwqnc!b577a!ywdf'
+SECRET_KEY = conf["SECRET_KEY"]
+
+#Daum_API
+DAUM_API_KEY = conf["DAUM_API_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = []
 
@@ -37,7 +44,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
+    'rest_framework.authtoken',
+
+    'member',
+    'movie',
 ]
+
+# rest_framework
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -80,6 +102,7 @@ DATABASES = {
     }
 }
 
+# DATABASES = conf["DATABASES"]
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -103,9 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
