@@ -7,6 +7,15 @@ import json
 from movie.models import Actor, StillCut, Movie, Director, MovieActorDetail
 
 
+def search_movie(movie_name):
+    req = "https://apis.daum.net/contents/movie?apikey={apikey}" \
+          "&output=json&q={movie_name}".format(apikey=settings.DAUM_API_KEY,
+                                               movie_name=movie_name)
+
+    r = requests.get(req)
+    movie_data = BeautifulSoup(r.text, "html.parser")
+
+
 def get_actor_director(url):
     r = requests.get(url)
     movie_detail_page = BeautifulSoup(r.text, "html.parser")
