@@ -2,7 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from movie.models import Movie, BoxofficeRank
-from movie.serializations import MovieDetailSerializer, BoxOfficeRankSerializer
+from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer
 
 
 class MovieDetail(APIView):
@@ -13,17 +13,13 @@ class MovieDetail(APIView):
         return Response(serial.data)
 
 
-class BoxOfficeRankList(APIView):
+class BoxofficeRankList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         ranking = BoxofficeRank.objects.all()
-        ranking_serial = {
-            "data":
-            [
-                BoxOfficeRankSerializer(rank).data
-                for rank
-                in ranking
-            ]
+        ranking_serial = BoxofficeRankSerializer(ranking, many=True)
+        ret = {
+            "data": ranking_serial.data
         }
-        return Response(ranking_serial)
+        return Response(ret)

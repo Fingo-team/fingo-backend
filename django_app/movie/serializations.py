@@ -46,8 +46,20 @@ class MovieDetailSerializer(serializers.ModelSerializer):
                   "nation_code",)
 
 
-class BoxOfficeRankSerializer(serializers.ModelSerializer):
-    movie = MovieDetailSerializer()
+class BoxofficeMovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ("id",
+                  "title",
+                  "genre",
+                  "img",
+                  "first_run_date",
+                  "score",
+                  "nation_code",)
+
+
+class BoxofficeRankSerializer(serializers.ModelSerializer):
+    movie =BoxofficeMovieSerializer()
 
     class Meta:
         model = BoxofficeRank
