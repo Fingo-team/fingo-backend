@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
+from movie.models import Movie
 
 
 class FingoUserManager(BaseUserManager):
@@ -33,6 +34,7 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     user_img = models.ImageField(blank=True)
+    activities = models.ManyToManyField(Movie, through="fingo_statistics.UserActivity")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ("nickname",)
