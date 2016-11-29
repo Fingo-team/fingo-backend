@@ -34,7 +34,6 @@ class Movie(models.Model):
     first_run_date = models.DateField()
     score = models.FloatField(default=float(0))
     nation_code = models.CharField(max_length=50)
-    naver_code = models.CharField(max_length=50)
     daum_code = models.CharField(max_length=50,
                                  unique=True)
 
