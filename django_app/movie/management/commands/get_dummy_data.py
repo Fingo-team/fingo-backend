@@ -26,7 +26,7 @@ def get_all_moviename(page_num):
 def init_naver_movie():
     movie_arr = [
         get_all_moviename(page_num=page_num)
-        for page_num in range(1, 5)
+        for page_num in range(1, 3)
         ]
 
     for page_num in range(len(movie_arr)):
