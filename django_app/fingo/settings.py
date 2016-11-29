@@ -32,7 +32,9 @@ DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
 
 AUTH_USER_MODEL = "member.fingouser"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "eb-fingo-real.ap-northeast-2.elasticbeanstalk.com",
+]
 
 
 # Application definition
@@ -50,6 +52,7 @@ INSTALLED_APPS = [
 
     'member',
     'movie',
+    'fingo_statistics',
 ]
 
 # rest_framework
