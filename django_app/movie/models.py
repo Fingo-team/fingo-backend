@@ -23,10 +23,10 @@ class Director(models.Model):
 
 class Movie(models.Model):
     title = models.CharField(max_length=200)
-    actor = models.ManyToManyField(Actor,
+    actors = models.ManyToManyField(Actor,
                                    through="MovieActorDetail",
                                    blank=True)
-    director = models.ManyToManyField(Director,
+    directors = models.ManyToManyField(Director,
                                       blank=True)
     genre = models.CharField(max_length=50)
     story = models.TextField()
