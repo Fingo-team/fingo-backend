@@ -34,7 +34,8 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     user_img = models.ImageField(blank=True)
-    activities = models.ManyToManyField(Movie, through="fingo_statistics.UserActivity")
+    activities = models.ManyToManyField(Movie,
+                                        through="fingo_statistics.UserActivity")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ("nickname",)
