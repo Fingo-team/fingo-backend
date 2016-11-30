@@ -31,10 +31,9 @@ class Movie(models.Model):
     genre = models.CharField(max_length=50)
     story = models.TextField()
     img = models.URLField()
-    first_run_date = models.DateField()
+    first_run_date = models.DateField(null=True, blank=True)
     score = models.FloatField(default=float(0))
     nation_code = models.CharField(max_length=50)
-    naver_code = models.CharField(max_length=50)
     daum_code = models.CharField(max_length=50,
                                  unique=True)
 
@@ -53,7 +52,7 @@ class StillCut(models.Model):
     movie = models.ForeignKey(Movie)
 
     def __str__(self):
-        return self.movie
+        return self.movie.title
 
 
 class BoxofficeRank(models.Model):

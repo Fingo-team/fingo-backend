@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os,sys
+import os, sys
 import json
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -28,11 +28,13 @@ SECRET_KEY = conf["SECRET_KEY"]
 DAUM_API_KEY = conf["DAUM_API_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
+# DEBUG = True
 AUTH_USER_MODEL = "member.fingouser"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "eb-fingo-real.ap-northeast-2.elasticbeanstalk.com",
+]
 
 
 # Application definition
@@ -48,8 +50,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
 
+    'django_crontab',
+
     'member',
     'movie',
+    'fingo_statistics',
+]
+
+# Crontab
+CRONJOBS = [
+    ("59 23 * * *", "django_app.movie.management.commands.get_boxoffice.init_boxoffice"),
 ]
 
 # rest_framework
@@ -94,15 +104,15 @@ WSGI_APPLICATION = 'fingo.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
-
-# DATABASES = conf["DATABASES"]
+else:
+    DATABASES = conf["DATABASES"]
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
