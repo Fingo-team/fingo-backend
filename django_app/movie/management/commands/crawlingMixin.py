@@ -99,9 +99,7 @@ def create_movie_object(res_dic):
 
             for img in stillcut_list:
                 StillCut.objects.get_or_create(img=img,
-                                               defaults={
-                                                   "movie": movie
-                                               })
+                                               movie=movie)
 
             for actor in actor_arr:
                 MovieActorDetail.objects.get_or_create(actor=actor["actor"],
