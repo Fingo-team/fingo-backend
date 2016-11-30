@@ -1,9 +1,9 @@
-from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from movie.models import Movie, BoxofficeRank
-from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer
+from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
+from movie import searchMixin
 
 
 class MovieDetail(APIView):
@@ -33,10 +33,8 @@ class MovieSearch(APIView):
 
     def get(self, request, *args, **kwargs):
         movie_name = request.GET.get("q")
-        try:
-            movie = Movie.objects.get(title__contains=movie_name)
-        except:
-            pass
-        finally:
-            serial = MovieDetailSerializer(movie)
+        movies = Movie.objects.filter(title__contains=movie_name)
+        if list(movies) == []:
+            movies = searchMixin.search_movie(movie_name)
+        serial = BoxofficeMovieSerializer(movies, many=True)
         return Response(serial.data)
