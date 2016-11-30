@@ -6,6 +6,7 @@ cement==2.8.2
 colorama==0.3.7
 decorator==4.0.10
 Django==1.10
+django-crontab==0.7.1
 django-filter==1.0.0
 djangorestframework==3.5.3
 docker-py==1.7.2
