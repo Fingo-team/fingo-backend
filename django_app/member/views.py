@@ -4,9 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+
 from django.contrib.auth import authenticate
 from member.forms import FingoUserForm, UserSignupForm
-from member.models import FingoUser
+from member.models import FingoUser, UserHash
+from apis.mail import send_activation_mail
 
 
 class UserLogin(APIView):
@@ -40,17 +42,23 @@ class UserSignUp(APIView):
     def post(self, request, *args, **kwargs):
         form = UserSignupForm(data=request.POST)
         if form.is_valid():
-            FingoUser.objects.create_user(email=form.cleaned_data["email"],
-                                          password=form.cleaned_data["password"],
-                                          nickname=form.cleaned_data["nickname"])
-
-            fingo_user = authenticate(email=form.cleaned_data["email"],
-                                      password=form.cleaned_data["password"])
-
-            if fingo_user:
-                token = Token.objects.get_or_create(user=fingo_user)[0]
-                ret = {"token": token.key}
-                return Response(ret, status=status.HTTP_200_OK)
-        return Response({"error": "회원정보가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                user, hashed_email = FingoUser.objects.create_user(email=form.cleaned_data["email"],
+                                                                   password=form.cleaned_data["password"],
+                                                                   nickname=form.cleaned_data["nickname"])
+            except:
+                return Response({"error": "이미 존재하는 id 입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                send_activation_mail(user_email=user.email, hashed_email=hashed_email)
+                return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
 
 
+class UserActivate(APIView):
+    def get(self, request, *args, **kwargs):
+
+        hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")
+        print(hashed_email)
+        active_ready_user = UserHash.objects.get(hashed_email=hashed_email)
+        active_ready_user.user.is_active = True
+        active_ready_user.user.save()
+        return Response({"info": "계정이 활성화 되었습니다."}, status=status.HTTP_200_OK)

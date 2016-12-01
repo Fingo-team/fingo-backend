@@ -3,7 +3,8 @@ from member import views
 
 
 urlpatterns = [
-    url(r'^login/', views.UserLogin.as_view()),
-    url(r'^logout/', views.UserLogout.as_view()),
-    url(r'^signup/', views.UserSignUp.as_view()),
+    url(r'^login/$', views.UserLogin.as_view()),
+    url(r'^logout/$', views.UserLogout.as_view()),
+    url(r'^signup/$', views.UserSignUp.as_view()),
+    url(r'^activate/(?P<hash>.*)/$', views.UserActivate.as_view()),
 ]
