@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.contrib.auth import authenticate
 from member.forms import FingoUserForm, UserSignupForm
@@ -60,7 +61,10 @@ class UserActivate(APIView):
     def get(self, request, *args, **kwargs):
 
         hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")
-        active_ready_user = UserHash.objects.get(hashed_email=hashed_email)
+        try:
+            active_ready_user = UserHash.objects.get(hashed_email=hashed_email)
+        except ObjectDoesNotExist:
+            return Response({"error": "인증요청 url이 잘못되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
         active_ready_user.user.is_active = True
         active_ready_user.user.save()
         return Response({"info": "계정이 활성화 되었습니다."}, status=status.HTTP_200_OK)

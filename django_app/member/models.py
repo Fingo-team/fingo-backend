@@ -11,7 +11,7 @@ class FingoUserManager(BaseUserManager):
         user.set_password(password)
         user.save()
 
-        hashed_email = pbkdf2_sha512.using(rounds=8000, salt_size=20).hash(user.email)
+        hashed_email = pbkdf2_sha512.using(rounds=8000, salt_size=20).hash(user.email)[:40]
 
         UserHash.objects.create(user=user,
                                 hashed_email=hashed_email)
