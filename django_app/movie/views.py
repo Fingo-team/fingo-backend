@@ -36,10 +36,13 @@ class MovieSearch(APIView):
 
     def get(self, request, *args, **kwargs):
         movie_name = request.GET.get("q")
-        movies = Movie.objects.filter(title__contains=movie_name)
-        if list(movies) == []:
-            movies = searchMixin.search_movie(movie_name)
-        serial = BoxofficeMovieSerializer(movies, many=True)
+        # DB에 충분한 data가 쌓일 시 아래 코드 활성화
+        # movies = Movie.objects.filter(title__contains=movie_name)
+        # if list(movies) == []:
+        #     movies = searchMixin.search_movie(movie_name)
+        searchMixin.search_movie(movie_name)
+        fingodb_movies = Movie.objects.filter(title__contains=movie_name)
+        serial = BoxofficeMovieSerializer(fingodb_movies, many=True)
         return Response(serial.data)
 
 
