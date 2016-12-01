@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -21,17 +22,19 @@ class UserLogin(APIView):
             if fingo_user:
                 token = Token.objects.get_or_create(user=fingo_user)[0]
                 ret = {"token": token.key}
-                return Response(ret)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(ret, status=status.HTTP_200_OK)
+        return Response({"error": "아이디 혹은 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLogout(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        request.user.auth_token.delete()
 
-        return Response(status=status.HTTP_200_OK)
+        if request.user.auth:
+            request.user.auth_token.delete()
+            return Response({"info": "정상적으로 로그인 되었습니다."}, status=status.HTTP_200_OK)
+        return Response({"error": "이미 로그아웃 되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserSignUp(APIView):
@@ -48,14 +51,6 @@ class UserSignUp(APIView):
             else:
                 send_activation_mail(user_email=user.email, hashed_email=hashed_email)
                 return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
-        #     fingo_user = authenticate(email=form.cleaned_data["email"],
-        #                               password=form.cleaned_data["password"])
-        #
-        #     if fingo_user:
-        #         token = Token.objects.get_or_create(user=fingo_user)[0]
-        #         ret = {"token": token.key}
-        #         return Response(ret)
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserActivate(APIView):
@@ -67,5 +62,3 @@ class UserActivate(APIView):
         active_ready_user.user.is_active = True
         active_ready_user.user.save()
         return Response({"info": "계정이 활성화 되었습니다."}, status=status.HTTP_200_OK)
-
-
