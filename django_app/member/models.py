@@ -16,7 +16,7 @@ class FingoUserManager(BaseUserManager):
         UserHash.objects.create(user=user,
                                 hashed_email=hashed_email)
 
-        return user
+        return user, hashed_email
 
     def create_superuser(self, email, nickname, password):
         user = FingoUser(email=email,

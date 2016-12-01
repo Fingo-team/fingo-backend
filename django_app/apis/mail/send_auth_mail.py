@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.core.mail import send_mail
-from passlib.hash import pbkdf2_sha512
 
 
 __all__ = [
@@ -8,8 +7,8 @@ __all__ = [
 ]
 
 
-def send_activation_mail(user_email):
-    hashed_email = pbkdf2_sha512.using(rounds=8000, salt_size=20).hash(user_email).replace("$pbkdf2-sha512$8000$", "")
+def send_activation_mail(user_email, hashed_email):
+    hashed_email = hashed_email.replace("$pbkdf2-sha512$8000$", "")
     activate_url = "http://eb-fingo-real.ap-northeast-2.elasticbeanstalk.com/api/v1.0/user/activate/{hashed_email}/".format(hashed_email=hashed_email)
     send_mail(
         "Fingo Service activation mail",
