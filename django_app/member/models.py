@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from movie.models import Movie
+from passlib.hash import pbkdf2_sha512
 
 
 class FingoUserManager(BaseUserManager):
@@ -10,7 +11,12 @@ class FingoUserManager(BaseUserManager):
         user.set_password(password)
         user.save()
 
-        return user
+        hashed_email = pbkdf2_sha512.using(rounds=8000, salt_size=20).hash(user.email)
+
+        UserHash.objects.create(user=user,
+                                hashed_email=hashed_email)
+
+        return user, hashed_email
 
     def create_superuser(self, email, nickname, password):
         user = FingoUser(email=email,
@@ -18,6 +24,7 @@ class FingoUserManager(BaseUserManager):
         user.set_password(password)
         user.is_staff = True
         user.is_superuser = True
+        user.is_active = True
 
         user.save()
 
@@ -33,6 +40,7 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
     joined_date = models.DateTimeField(auto_now_add=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     user_img = models.ImageField(blank=True)
     activities = models.ManyToManyField(Movie,
                                         through="fingo_statistics.UserActivity")
@@ -47,3 +55,8 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self):
         return self.nickname
+
+
+class UserHash(models.Model):
+    user = models.ForeignKey(FingoUser)
+    hashed_email = models.CharField(max_length=200)
