@@ -1,9 +1,9 @@
-from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from django.db import IntegrityError
 
 from django.contrib.auth import authenticate
 from member.forms import FingoUserForm, UserSignupForm
@@ -46,8 +46,11 @@ class UserSignUp(APIView):
                 user, hashed_email = FingoUser.objects.create_user(email=form.cleaned_data["email"],
                                                                    password=form.cleaned_data["password"],
                                                                    nickname=form.cleaned_data["nickname"])
-            except:
-                return Response({"error": "이미 존재하는 id 입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            except IntegrityError as e:
+                if "email" in str(e):
+                    return Response({"error": "이미 존재하는 email 입니다."}, status=status.HTTP_400_BAD_REQUEST)
+                elif "nickname" in str(e):
+                    return Response({"error": "이미 존재하는 nickname 입니다."}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 send_activation_mail(user_email=user.email, hashed_email=hashed_email)
                 return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
@@ -57,7 +60,6 @@ class UserActivate(APIView):
     def get(self, request, *args, **kwargs):
 
         hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")
-        print(hashed_email)
         active_ready_user = UserHash.objects.get(hashed_email=hashed_email)
         active_ready_user.user.is_active = True
         active_ready_user.user.save()
