@@ -40,13 +40,10 @@ class UserSignUp(APIView):
     def post(self, request, *args, **kwargs):
         form = UserSignupForm(data=request.POST)
         if form.is_valid():
-            try:
-                FingoUser.objects.create_user(email=form.cleaned_data["email"],
-                                              password=form.cleaned_data["password"],
-                                              nickname=form.cleaned_data["nickname"])
-            except IntegrityError as e:
-                print(e.message)
-                return Response({"error": "올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            FingoUser.objects.create_user(email=form.cleaned_data["email"],
+                                          password=form.cleaned_data["password"],
+                                          nickname=form.cleaned_data["nickname"])
+
             fingo_user = authenticate(email=form.cleaned_data["email"],
                                       password=form.cleaned_data["password"])
 
