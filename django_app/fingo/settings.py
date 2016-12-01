@@ -24,8 +24,17 @@ conf = json.loads(open(os.path.join(ROOT_DIR, ".django-settings/deploy_setting.j
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf["SECRET_KEY"]
 
-#Daum_API
+# Daum_API
 DAUM_API_KEY = conf["DAUM_API_KEY"]
+
+# Email
+email_config = conf['EMAIL']
+EMAIL_HOST = email_config['EMAIL_HOST']
+EMAIL_PORT = email_config['EMAIL_PORT']
+EMAIL_HOST_USER = email_config['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = email_config['EMAIL_HOST_PASSWORD']
+EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
