@@ -7,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from member.forms import FingoUserForm, UserSignupForm
 from member.models import FingoUser
+from apis.mail import send_activation_mail
 
 
 class UserLogin(APIView):
@@ -39,14 +40,14 @@ class UserSignUp(APIView):
         form = UserSignupForm(data=request.POST)
         if form.is_valid():
             try:
-                FingoUser.objects.create_user(email=form.cleaned_data["email"],
-                                              password=form.cleaned_data["password"],
-                                              nickname=form.cleaned_data["nickname"])
+                user = FingoUser.objects.create_user(email=form.cleaned_data["email"],
+                                                     password=form.cleaned_data["password"],
+                                                     nickname=form.cleaned_data["nickname"])
             except:
                 return Response({"error": "이미 존재하는 id 입니다."}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                # send_mail
-                pass
+                send_activation_mail(user.email)
+                return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
         #     fingo_user = authenticate(email=form.cleaned_data["email"],
         #                               password=form.cleaned_data["password"])
         #
