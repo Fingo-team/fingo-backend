@@ -1,4 +1,3 @@
-from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -61,7 +60,6 @@ class UserActivate(APIView):
     def get(self, request, *args, **kwargs):
 
         hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")
-        print(hashed_email)
         active_ready_user = UserHash.objects.get(hashed_email=hashed_email)
         active_ready_user.user.is_active = True
         active_ready_user.user.save()
