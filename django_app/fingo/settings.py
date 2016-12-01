@@ -28,8 +28,8 @@ SECRET_KEY = conf["SECRET_KEY"]
 DAUM_API_KEY = conf["DAUM_API_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
-# DEBUG = True
+# DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
+DEBUG = True
 AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = [
