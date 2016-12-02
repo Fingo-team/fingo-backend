@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from django.contrib.auth import authenticate
 from member.forms import FingoUserForm, UserSignupForm
@@ -60,7 +61,7 @@ class UserSignUp(APIView):
 class UserActivate(APIView):
     def get(self, request, *args, **kwargs):
 
-        hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")
+        hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")+settings.SECRET_KEY
         try:
             active_ready_user = UserHash.objects.get(hashed_email=hashed_email)
         except ObjectDoesNotExist:

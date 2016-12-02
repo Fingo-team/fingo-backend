@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
+from django.conf import settings
 from movie.models import Movie
 from passlib.hash import pbkdf2_sha512
 
@@ -14,7 +15,7 @@ class FingoUserManager(BaseUserManager):
         hashed_email = pbkdf2_sha512.using(rounds=8000, salt_size=20).hash(user.email)[:40]
 
         UserHash.objects.create(user=user,
-                                hashed_email=hashed_email)
+                                hashed_email=hashed_email+settings.SECRET_KEY)
 
         return user, hashed_email
 
