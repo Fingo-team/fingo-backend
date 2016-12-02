@@ -24,9 +24,6 @@ conf = json.loads(open(os.path.join(ROOT_DIR, ".django-settings/deploy_setting.j
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf["SECRET_KEY"]
 
-# Daum_API
-DAUM_API_KEY = conf["DAUM_API_KEY"]
-
 # Email
 email_config = conf['EMAIL']
 EMAIL_HOST = email_config['EMAIL_HOST']
@@ -39,6 +36,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
 DEBUG = True
+STATIC_S3 = True
+
 AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = [
@@ -60,6 +59,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'django_crontab',
+    'storages',
 
     'member',
     'movie',
@@ -159,4 +159,28 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = '/static/'
+
+# 3rd party setting
+
+# Daum_API
+DAUM_API_KEY = conf["DAUM_API_KEY"]
+
+# S3
+if not DEBUG or STATIC_S3:
+    s3_config = conf["S3"]
+    AWS_STORAGE_BUCKET_NAME = s3_config["AWS_STORAGE_BUCKET_NAME"]
+    AWS_ACCESS_KEY_ID = s3_config["AWS_ACCESS_KEY_ID"]
+    AWS_SECRET_ACCESS_KEY = s3_config["AWS_SECRET_ACCESS_KEY"]
+    AWS_S3_CUSTOM_DOMAIN = '{}.amazonaws.com'.format(AWS_STORAGE_BUCKET_NAME)
+
+    STATIC_FILE_LOCATION = "static"
+    STATIC_URL = "https://{}/{}/".format(AWS_S3_CUSTOM_DOMAIN, STATIC_FILE_LOCATION)
+    STATICFILES_STORAGE = 'fingo.fingo_storage.StaticStorage'
+
+    MEDIA_FILE_LOCATION = "media"
+    MEDIA_URL = "https://{}/{}/".format(AWS_S3_CUSTOM_DOMAIN, MEDIA_FILE_LOCATION)
+    MEDIAFILES_STORAGE = 'fingo.fingo_storage.MediaStorage'
+else :
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    STATIC_URL = '/static/'
+    MEDIA_URL = '/media/'
