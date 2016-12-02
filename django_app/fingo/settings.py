@@ -34,8 +34,8 @@ EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
-DEBUG = True
+DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
+# DEBUG = True
 STATIC_S3 = True
 
 AUTH_USER_MODEL = "member.fingouser"
@@ -180,7 +180,7 @@ if not DEBUG or STATIC_S3:
     MEDIA_FILE_LOCATION = "media"
     MEDIA_URL = "https://{}/{}/".format(AWS_S3_CUSTOM_DOMAIN, MEDIA_FILE_LOCATION)
     MEDIAFILES_STORAGE = 'fingo.fingo_storage.MediaStorage'
-else :
+else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     STATIC_URL = '/static/'
     MEDIA_URL = '/media/'
