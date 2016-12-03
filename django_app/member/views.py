@@ -10,7 +10,6 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from member.forms import FingoUserForm, UserSignupForm
 from member.models import FingoUser, UserHash
-from apis.mail import send_activation_mail
 
 
 class UserLogin(APIView):
@@ -45,16 +44,15 @@ class UserSignUp(APIView):
         form = UserSignupForm(data=request.POST)
         if form.is_valid():
             try:
-                user, hashed_email = FingoUser.objects.create_user(email=form.cleaned_data["email"],
-                                                                   password=form.cleaned_data["password"],
-                                                                   nickname=form.cleaned_data["nickname"])
+                FingoUser.objects.create_user(email=form.cleaned_data["email"],
+                                              password=form.cleaned_data["password"],
+                                              nickname=form.cleaned_data["nickname"])
             except IntegrityError as e:
                 if "email" in str(e):
                     return Response({"error": "이미 존재하는 email 입니다."}, status=status.HTTP_400_BAD_REQUEST)
                 elif "nickname" in str(e):
                     return Response({"error": "이미 존재하는 nickname 입니다."}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                send_activation_mail(user_email=user.email, hashed_email=hashed_email)
                 return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
 
 

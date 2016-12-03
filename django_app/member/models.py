@@ -3,21 +3,27 @@ from django.db import models
 from django.conf import settings
 from movie.models import Movie
 from passlib.hash import pbkdf2_sha512
+from apis.mail import send_auth_mail
 
 
 class FingoUserManager(BaseUserManager):
+    def create_userhash(self, user):
+        hashed_email = pbkdf2_sha512.using(rounds=8000, salt_size=20).hash(user.email)[:40]
+        UserHash.objects.create(user=user,
+                                hashed_email=hashed_email+settings.SECRET_KEY)
+
+        send_auth_mail.send_activation_mail(user_email=user.email,
+                                            hashed_email=hashed_email)
+
     def create_user(self, email, nickname, user_img=None, password=None):
         user = FingoUser(email=email,
                          nickname=nickname)
         user.set_password(password)
         user.save()
 
-        hashed_email = pbkdf2_sha512.using(rounds=8000, salt_size=20).hash(user.email)[:40]
+        self.create_userhash(user)
 
-        UserHash.objects.create(user=user,
-                                hashed_email=hashed_email+settings.SECRET_KEY)
-
-        return user, hashed_email
+        return user
 
     def create_superuser(self, email, nickname, password):
         user = FingoUser(email=email,

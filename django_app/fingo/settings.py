@@ -35,8 +35,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
-# DEBUG = True
-STATIC_S3 = True
+DEBUG = True
+STATIC_S3 = True if DEBUG is False else False
 
 AUTH_USER_MODEL = "member.fingouser"
 
