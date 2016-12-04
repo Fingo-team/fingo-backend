@@ -37,7 +37,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
 # DEBUG = True
 STATIC_S3 = True if DEBUG is False else False
-
+# STATIC_S3 = True
 AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = [
@@ -166,7 +166,7 @@ USE_TZ = True
 DAUM_API_KEY = conf["DAUM_API_KEY"]
 
 # S3
-if not DEBUG or STATIC_S3:
+if STATIC_S3 or not DEBUG:
     s3_config = conf["S3"]
     AWS_STORAGE_BUCKET_NAME = s3_config["AWS_STORAGE_BUCKET_NAME"]
     AWS_ACCESS_KEY_ID = s3_config["AWS_ACCESS_KEY_ID"]
@@ -179,7 +179,7 @@ if not DEBUG or STATIC_S3:
 
     MEDIA_FILE_LOCATION = "media"
     MEDIA_URL = "https://{}/{}/".format(AWS_S3_CUSTOM_DOMAIN, MEDIA_FILE_LOCATION)
-    MEDIAFILES_STORAGE = 'fingo.fingo_storage.MediaStorage'
+    DEFAULT_FILE_STORAGE = 'fingo.fingo_storage.MediaStorage'
 else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     STATIC_URL = '/static/'
