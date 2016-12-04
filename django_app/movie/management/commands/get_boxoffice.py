@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from movie.management.commands import crawlingMixin
+from datetime import datetime
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -7,12 +8,14 @@ from movie.models import BoxofficeRank
 
 
 def get_boxoffice_moviename():
-    boxoffice_url = "http://movie.naver.com/movie/sdb/rank/rboxoffice.nhn"
+    today = datetime.now().strftime("%Y%m%d")
+    boxoffice_url = "http://movie.daum.net/boxoffice/weekly?" \
+                    "startDate={date}".format(date=today)
 
     r = requests.get(boxoffice_url)
     bs = BeautifulSoup(r.text, "html.parser")
 
-    movie_list = bs.select("div.tit1 > a")
+    movie_list = bs.select(".tit_join > a")
 
     movie_names = [
         movie.text
