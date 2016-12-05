@@ -1,3 +1,4 @@
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -67,3 +68,19 @@ class UserActivate(APIView):
         active_ready_user.user.is_active = True
         active_ready_user.user.save()
         return Response({"info": "계정이 활성화 되었습니다."}, status=status.HTTP_200_OK)
+
+
+class UserFacebookLogin(APIView):
+
+    def post(self, request, *args, **kwargs):
+        ACCESS_TOKEN = kwargs.get("access_token")
+        url_debug_token = 'https://graph.facebook.com/debug_token?' \
+                          'input_token={it}&' \
+                          'access_token={at}'.format(
+                          it=ACCESS_TOKEN,
+                          at=settings.FB_APP_ACCESS_TOKEN
+        )
+        r = requests.get(url_debug_token)
+        debug_token = r.json()
+        # USER_ID = debug_token['data']['user_id']
+        return Response(debug_token)

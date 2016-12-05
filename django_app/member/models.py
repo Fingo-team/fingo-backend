@@ -52,6 +52,11 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
     activities = models.ManyToManyField(Movie,
                                         through="fingo_statistics.UserActivity")
 
+    cover_img = models.ImageField(blank=True)
+    # facebook_login
+    facebook_id = models.CharField(max_length=50, blank=True)
+    is_facebook_user = models.BooleanField(default=False)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ("nickname",)
 
