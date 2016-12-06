@@ -24,6 +24,10 @@ conf = json.loads(open(os.path.join(ROOT_DIR, ".django-settings/deploy_setting.j
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf["SECRET_KEY"]
 
+# Facebook
+FB_APP_ID = conf['FACEBOOK']['APP_ID']
+FB_SECRET_CODE = conf['FACEBOOK']['SECRET_CODE']
+FB_APP_ACCESS_TOKEN = FB_APP_ID+'|'+FB_SECRET_CODE
 # Email
 email_config = conf['EMAIL']
 EMAIL_HOST = email_config['EMAIL_HOST']
@@ -42,6 +46,7 @@ AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = [
     "eb-fingo-real.ap-northeast-2.elasticbeanstalk.com",
+    "fingo-dev.ap-northeast-2.elasticbeanstalk.com"
 ]
 
 

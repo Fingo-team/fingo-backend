@@ -37,11 +37,20 @@ class FingoUserManager(BaseUserManager):
 
         return user
 
+    def create_facebook_user(self, facebook_id, nickname, password=None):
+        user = FingoUser(email='{}@fingo.com'.format(facebook_id),
+                         nickname=nickname,
+                         facebook_id=facebook_id)
+        user.is_facebook = True
+        user.is_active = True
+        user.set_password(password)
+        user.save()
+        return user
+
 
 class FingoUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
-    nickname = models.CharField(max_length=100,
-                                unique=True)
+    nickname = models.CharField(max_length=100)
     level = models.IntegerField(default=1)
     exp = models.IntegerField(default=0)
     joined_date = models.DateTimeField(auto_now_add=True)
@@ -54,6 +63,11 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
                                   upload_to="user_cover_img")
     activities = models.ManyToManyField(Movie,
                                         through="fingo_statistics.UserActivity")
+
+    cover_img = models.ImageField(blank=True)
+    # facebook_login
+    facebook_id = models.CharField(max_length=50, blank=True)
+    is_facebook = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ("nickname",)
