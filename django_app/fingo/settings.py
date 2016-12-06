@@ -24,10 +24,6 @@ conf = json.loads(open(os.path.join(ROOT_DIR, ".django-settings/deploy_setting.j
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = conf["SECRET_KEY"]
 
-# Facebook
-FB_APP_ID = conf['FACEBOOK']['APP_ID']
-FB_SECRET_CODE = conf['FACEBOOK']['SECRET_CODE']
-FB_APP_ACCESS_TOKEN = FB_APP_ID+'|'+FB_SECRET_CODE
 # Email
 email_config = conf['EMAIL']
 EMAIL_HOST = email_config['EMAIL_HOST']
@@ -170,12 +166,14 @@ USE_TZ = True
 # Daum_API
 DAUM_API_KEY = conf["DAUM_API_KEY"]
 
-# S3
+# AWS
+aws_config = conf["AWS"]
+
 if STATIC_S3 or not DEBUG:
-    s3_config = conf["S3"]
+    s3_config = aws_config["S3"]
     AWS_STORAGE_BUCKET_NAME = s3_config["AWS_STORAGE_BUCKET_NAME"]
-    AWS_ACCESS_KEY_ID = s3_config["AWS_ACCESS_KEY_ID"]
-    AWS_SECRET_ACCESS_KEY = s3_config["AWS_SECRET_ACCESS_KEY"]
+    AWS_ACCESS_KEY_ID = aws_config["AWS_ACCESS_KEY_ID"]
+    AWS_SECRET_ACCESS_KEY = aws_config["AWS_SECRET_ACCESS_KEY"]
     AWS_S3_CUSTOM_DOMAIN = '{}.s3.amazonaws.com'.format(AWS_STORAGE_BUCKET_NAME)
 
     STATIC_FILE_LOCATION = "static"
@@ -189,3 +187,9 @@ else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     STATIC_URL = '/static/'
     MEDIA_URL = '/media/'
+
+
+# Facebook
+FB_APP_ID = conf['FACEBOOK']['APP_ID']
+FB_SECRET_CODE = conf['FACEBOOK']['SECRET_CODE']
+FB_APP_ACCESS_TOKEN = FB_APP_ID+'|'+FB_SECRET_CODE
