@@ -50,8 +50,7 @@ class FingoUserManager(BaseUserManager):
 
 class FingoUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
-    nickname = models.CharField(max_length=100,
-                                unique=True)
+    nickname = models.CharField(max_length=100)
     level = models.IntegerField(default=1)
     exp = models.IntegerField(default=0)
     joined_date = models.DateTimeField(auto_now_add=True)
