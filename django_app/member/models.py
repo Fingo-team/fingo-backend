@@ -37,6 +37,16 @@ class FingoUserManager(BaseUserManager):
 
         return user
 
+    def create_facebook_user(self, facebook_id, nickname, password=None):
+        user = FingoUser(email='{}@fingo.com'.format(facebook_id),
+                         nickname=nickname,
+                         facebook_id=facebook_id)
+        user.is_facebook = True
+        user.is_active = True
+        user.set_password(password)
+        user.save()
+        return user
+
 
 class FingoUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
