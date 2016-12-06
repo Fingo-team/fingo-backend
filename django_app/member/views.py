@@ -73,14 +73,37 @@ class UserActivate(APIView):
 class UserFacebookLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        ACCESS_TOKEN = kwargs.get("access_token")
+        access_token = request.POST.get("access_token")
         url_debug_token = 'https://graph.facebook.com/debug_token?' \
                           'input_token={it}&' \
                           'access_token={at}'.format(
-                          it=ACCESS_TOKEN,
-                          at=settings.FB_APP_ACCESS_TOKEN
-        )
+                            it=access_token,
+                            at=settings.FB_APP_ACCESS_TOKEN
+                          )
         r = requests.get(url_debug_token)
         debug_token = r.json()
-        # USER_ID = debug_token['data']['user_id']
-        return Response(debug_token)
+        if debug_token['data']['is_valid']:
+            user_id = debug_token['data']['user_id']
+            try:
+                facebook_user = FingoUser.objects.get(facebook_id=user_id)
+            except FingoUser.DoesNotExist:
+                user_info = self.get_user_info(user_id, access_token)
+                facebook_user = FingoUser.objects.create_facebook_user(facebook_id=user_id,
+                                                                       nickname=user_info['name'])
+            token = Token.objects.get_or_create(user=facebook_user)[0]
+            ret = {"token": token.key}
+            return Response(ret, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': debug_token['data']['error']['message']})
+
+    def get_user_info(self, user_id, access_token):
+        url_request_user_info = 'https://graph.facebook.com/' \
+                                '{user_id}?' \
+                                'fields=id,name&' \
+                                'access_token={access_token}'.format(
+            user_id=user_id,
+            access_token=access_token
+        )
+        r = requests.get(url_request_user_info)
+        user_info = r.json()
+        return user_info
