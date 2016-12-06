@@ -16,7 +16,6 @@ class MovieDetail(APIView):
 
     def get(self, request, *args, **kwargs):
         movie = Movie.objects.get(pk=kwargs.get("pk"))
-        # from IPython import embed; embed()
         serial = MovieDetailSerializer(movie, context={"request": request})
 
         return Response(serial.data)
@@ -86,7 +85,7 @@ class MovieComment(APIView):
         movie = Movie.objects.get(pk=kwargs.get("pk"))
         queryset = UserActivity.objects.filter(movie=movie)
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
-        # OrderingFilter를 사용할 것 * 공식 문서 참고
+        # OrderingFilter를 사용할 것 *공식 문서 참고
         paginator.ordering = "-pk"
         paged_comments = paginator.paginate_queryset(queryset, request)
         serial = UserCommentSerializer(paged_comments, many=True,

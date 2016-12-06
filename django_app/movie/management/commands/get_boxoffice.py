@@ -46,7 +46,3 @@ def init_boxoffice():
 class Command(BaseCommand):
     def handle(self, *args, **options):
         init_boxoffice()
-
-
-def crontab_test():
-    os.system("echo 'test' >> test.txt ")

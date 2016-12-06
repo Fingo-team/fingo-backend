@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
 
-    'django_crontab',
     'storages',
 
     'member',
@@ -67,10 +66,6 @@ INSTALLED_APPS = [
     'fingo_statistics',
 ]
 
-# Crontab
-CRONJOBS = [
-    ("59 23 * * *", "django_app.movie.management.commands.get_boxoffice.init_boxoffice"),
-]
 
 # rest_framework
 
@@ -192,6 +187,6 @@ else:
 
 
 # Facebook
-FB_APP_ID = conf['FACEBOOK']['APP_ID']
-FB_SECRET_CODE = conf['FACEBOOK']['SECRET_CODE']
-FB_APP_ACCESS_TOKEN = FB_APP_ID+'|'+FB_SECRET_CODE
+# FB_APP_ID = conf['FACEBOOK']['APP_ID']
+# FB_SECRET_CODE = conf['FACEBOOK']['SECRET_CODE']
+# FB_APP_ACCESS_TOKEN = FB_APP_ID+'|'+FB_SECRET_CODE
