@@ -59,8 +59,6 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=False)
     user_img = models.ImageField(blank=True,
                                  upload_to="user_img")
-    cover_img = models.ImageField(blank=True,
-                                  upload_to="user_cover_img")
     activities = models.ManyToManyField(Movie,
                                         through="fingo_statistics.UserActivity")
 
