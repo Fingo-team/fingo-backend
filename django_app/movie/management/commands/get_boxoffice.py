@@ -3,6 +3,7 @@ from movie.management.commands import crawlingMixin
 from datetime import datetime
 import time
 import requests
+import os
 from bs4 import BeautifulSoup
 from movie.models import BoxofficeRank
 
@@ -45,3 +46,7 @@ def init_boxoffice():
 class Command(BaseCommand):
     def handle(self, *args, **options):
         init_boxoffice()
+
+
+def crontab_test():
+    os.system("echo 'test' >> test.txt ")

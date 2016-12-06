@@ -6,7 +6,7 @@ from movie.models import Movie
 class UserActivity(models.Model):
     user = models.ForeignKey(FingoUser)
     movie = models.ForeignKey(Movie)
-    comment = models.CharField(max_length=200, blank=True)
+    comment = models.CharField(max_length=200, null=True)
     score = models.FloatField(null=True)
     watched_movie = models.BooleanField(default=False)
     wish_movie = models.BooleanField(default=False)
