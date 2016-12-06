@@ -1,1 +1,1 @@
-1 0 * * * /opt/python/run/venv/bin/python /opt/python/current/app/django_app/manage.py get_boxoffice
+30 01 * * * /opt/python/run/venv/bin/python /opt/python/current/app/django_app/manage.py get_boxoffice
