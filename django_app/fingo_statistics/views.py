@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.settings import api_settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -32,9 +33,14 @@ class UserComments(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.auth.user
-        user_comments = UserActivity.objects.filter(user=user).order_by("-activity_time")
-        serial = UserCommentsSerializer(user_comments, many=True)
+        user_comments = UserActivity.objects.filter(user=user)#.order_by("-activity_time")
 
-        return Response(serial.data, status=status.HTTP_200_OK)
+        paginator = api_settings.DEFAULT_PAGINATION_CLASS()
+        paginator.ordering = "-activity_time"
+        paged_comments = paginator.paginate_queryset(user_comments, request)
+
+        serial = UserCommentsSerializer(paged_comments, many=True)
+
+        return paginator.get_paginated_response(serial.data)
 
 
