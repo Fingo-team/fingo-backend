@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from fingo_statistics.models import UserActivity
-from fingo_statistics.serializations import UserCommentsSerializer
+from fingo_statistics.serializations import UserCommentsSerializer, UserActivityMoviesSerializer
 from member.models import FingoUser
 from member.serializations import UserSerializer
 
@@ -43,4 +43,35 @@ class UserComments(APIView):
 
         return paginator.get_paginated_response(serial.data)
 
+
+class UserWishMovies(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        user = request.auth.user
+        user_wish_movies = UserActivity.objects.filter(user=user).filter(wish_movie=True)
+
+        paginator = api_settings.DEFAULT_PAGINATION_CLASS()
+        paginator.ordering = "-activity_time"
+        paged_wish_movies = paginator.paginate_queryset(user_wish_movies, request)
+
+        serial = UserActivityMoviesSerializer(paged_wish_movies, many=True)
+
+        return paginator.get_paginated_response(serial.data)
+
+
+class UserWatchedMovies(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        user = request.auth.user
+        user_watched_movies = UserActivity.objects.filter(user=user).filter(watched_movie=True)
+
+        paginator = api_settings.DEFAULT_PAGINATION_CLASS()
+        paginator.ordering = "-activity_time"
+        paged_watched_movies = paginator.paginate_queryset(user_watched_movies, request)
+
+        serial = UserActivityMoviesSerializer(paged_watched_movies, many=True)
+
+        return paginator.get_paginated_response(serial.data)
 
