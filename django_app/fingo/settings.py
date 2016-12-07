@@ -84,13 +84,12 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'fingo.urls'
@@ -168,14 +167,8 @@ CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
 )
 
-CORS_ALLOW_METHODS = (
-    'DELETE',
-    'GET',
-    'PATCH',
-    'POST',
-)
 
-CORS_ALLOW_HEADERS = default_headers
+
 
 # 3rd party setting
 
