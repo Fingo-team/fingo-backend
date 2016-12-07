@@ -154,3 +154,42 @@ class MovieAsUserComment(APIView):
             user_activity.save()
 
         return Response({"info": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
+
+
+class MovieScore(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            movie = Movie.objects.get(pk=kwargs.get("pk"))
+        except Movie.DoesNotExist:
+            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.auth.user
+        active = UserActivity.objects.get_or_create(user=user,
+                                                    movie=movie)[0]
+        return Response({'score': active.score}, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            movie = Movie.objects.get(pk=kwargs.get("pk"))
+        except Movie.DoesNotExist:
+            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.auth.user
+        active = UserActivity.objects.get_or_create(user=user,
+                                                    movie=movie)[0]
+        user_score = float(request.POST["score"])
+        if 0.5 <= user_score <= 5.0:
+            active.score = user_score
+            active.watched_movie = True
+            active.wish_movie = False
+            active.save()
+            average.score_average(movie)
+            return Response({'info': '점수가 올바르게 들어갔습니다.'}, status=status.HTTP_200_OK)
+        elif user_score == 0.0:
+            active.score = None
+            active.watched_movie = False
+            active.save()
+            average.score_average(movie)
+            return Response({'info': '해당 영화의 평가가 리셋됩니다.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
