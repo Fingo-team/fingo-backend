@@ -1,7 +1,7 @@
 import requests
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
@@ -128,3 +128,10 @@ class UserFacebookLogin(APIView):
         r = requests.get(url_request_user_info)
         user_info = r.json()
         return user_info
+
+
+class TestView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        return Response({"msg": "test complete"})
