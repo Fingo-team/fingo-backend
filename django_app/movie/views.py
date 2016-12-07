@@ -78,7 +78,7 @@ class MovieScore(APIView):
             return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MovieComment(APIView):
+class MovieComments(APIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
@@ -91,6 +91,18 @@ class MovieComment(APIView):
         serial = UserCommentSerializer(paged_comments, many=True)
 
         return paginator.get_paginated_response(serial.data)
+
+
+class MovieAsUserComment(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        user = request.auth.user
+        movie = Movie.objects.get(pk=kwargs.get("pk"))
+        user_comment = UserActivity.objects.get(user=user, movie=movie)
+        serial = UserCommentSerializer(user_comment)
+
+        return Response(serial.data)
 
     def post(self, request, *args, **kwargs):
         user = request.auth.user
