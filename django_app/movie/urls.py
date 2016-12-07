@@ -10,7 +10,7 @@ urlpatterns = [
     # search
     url(r"search/", views.MovieSearch.as_view()),
     # score
-    url(r"score/(?P<pk>\d+)/$", views.MovieScore.as_view()),
+    # url(r"score/(?P<pk>\d+)/$", views.MovieScore.as_view()),
     # comment
     url(r"(?P<pk>\+d)/comment/$", views.MovieAsUserComment.as_view()),
     # wish

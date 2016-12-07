@@ -72,3 +72,16 @@ class BoxofficeRankSerializer(serializers.ModelSerializer):
         model = BoxofficeRank
         fields = ("rank",
                   "movie",)
+
+
+class UserPageMovieSerializer(serializers.ModelSerializer):
+    stillcut = StillcutSerializer(read_only=True,
+                                  many=True,
+                                  source="stillcut_set")
+
+    class Meta:
+        model = Movie
+        fields = ("id",
+                  "title",
+                  "img",
+                  "stillcut")
