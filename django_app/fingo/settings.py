@@ -167,9 +167,6 @@ CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
 )
 
-
-
-
 # 3rd party setting
 
 # Daum_API
