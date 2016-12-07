@@ -21,4 +21,5 @@ class UserCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserActivity
         fields = ("user",
-                  "comment",)
+                  "comment",
+                  "score",)
