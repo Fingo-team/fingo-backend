@@ -174,7 +174,6 @@ CORS_ALLOW_METHODS = (
     'POST',
 )
 
-
 # 3rd party setting
 
 # Daum_API

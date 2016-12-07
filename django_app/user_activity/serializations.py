@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from fingo_statistics.models import UserActivity
+from user_activity.models import UserActivity
 from member.serializations import UserSerializer
 
 
