@@ -38,6 +38,7 @@ DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
 # DEBUG = True
 STATIC_S3 = True if DEBUG is False else False
 # STATIC_S3 = True
+
 AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = [
