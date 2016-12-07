@@ -102,7 +102,7 @@ class MovieComments(APIView):
         queryset = UserActivity.objects.filter(movie=movie)
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
         # OrderingFilter를 사용할 것 *공식 문서 참고
-        paginator.ordering = "-pk"
+        paginator.ordering = "-activity_time"
         paged_comments = paginator.paginate_queryset(queryset, request)
         serial = MovieCommentsSerializer(paged_comments, many=True)
 
