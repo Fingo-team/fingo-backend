@@ -6,11 +6,14 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.datastructures import MultiValueDictKeyError
 from django.conf import settings
-
 from django.contrib.auth import authenticate
+from django.core.files.base import ContentFile
+
 from member.forms import FingoUserForm, UserSignupForm
 from member.models import FingoUser, UserHash
+from apis.image_file.resizing_image import create_thumbnail
 
 
 class UserLogin(APIView):
@@ -68,6 +71,24 @@ class UserActivate(APIView):
         active_ready_user.user.is_active = True
         active_ready_user.user.save()
         return Response({"info": "계정이 활성화 되었습니다."}, status=status.HTTP_200_OK)
+
+
+class UserProfileImgUpload(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = request.auth.user
+        try:
+            user_img = request.FILES["user_img"]
+        except MultiValueDictKeyError:
+            return Response({"error": "이미지를 선택하지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            temp_img, img_name = create_thumbnail(user_img)
+            content_file = ContentFile(temp_img.read())
+            user.user_img.save(img_name+".jpg", content_file)
+            temp_img.close()
+            content_file.close()
+        return Response({"info": "프로필 이미지를 등록하였습니다."}, status=status.HTTP_201_CREATED)
 
 
 class UserFacebookLogin(APIView):

@@ -1,11 +1,13 @@
 from rest_framework import status
+from rest_framework.settings import api_settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from fingo_statistics.models import UserActivity
 from movie.models import Movie, BoxofficeRank
+from fingo_statistics.models import UserActivity
 from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
+from fingo_statistics.serializations import UserCommentSerializer
 from movie import searchMixin
 
 from utils.statistics import average
@@ -16,7 +18,7 @@ class MovieDetail(APIView):
 
     def get(self, request, *args, **kwargs):
         movie = Movie.objects.get(pk=kwargs.get("pk"))
-        serial = MovieDetailSerializer(movie)
+        serial = MovieDetailSerializer(movie, context={"request": request})
 
         return Response(serial.data)
 
@@ -46,33 +48,6 @@ class MovieSearch(APIView):
         fingodb_movies = Movie.objects.filter(title__contains=movie_name)
         serial = BoxofficeMovieSerializer(fingodb_movies, many=True)
         return Response(serial.data)
-
-
-class MovieScore(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request, *args, **kwargs):
-        try:
-            movie = Movie.objects.get(pk=kwargs.get("pk"))
-        except Movie.DoesNotExist:
-            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.auth.user
-        active = UserActivity.objects.get_or_create(user=user,
-                                                    movie=movie)[0]
-        user_score = float(request.POST["score"])
-        try:
-            if 0.0 <= user_score <= 5.0:
-                active.score = user_score
-                active.watched_movie = True
-                active.wish_movie = False
-                active.save()
-
-                average.score_average(movie)
-                return Response(status=status.HTTP_200_OK)
-            else:
-                raise ValueError
-        except ValueError:
-            return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MovieWish(APIView):
@@ -113,3 +88,57 @@ class MovieWish(APIView):
             active.save()
 
         return Response({'info': '해당 영화의 보고싶어요를 {} 처리 했습니다.'.format(wish_movie)}, status=status.HTTP_200_OK)
+
+
+class MovieComment(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, *args, **kwargs):
+        movie = Movie.objects.get(pk=kwargs.get("pk"))
+        queryset = UserActivity.objects.filter(movie=movie)
+        paginator = api_settings.DEFAULT_PAGINATION_CLASS()
+        # OrderingFilter를 사용할 것 *공식 문서 참고
+        paginator.ordering = "-pk"
+        paged_comments = paginator.paginate_queryset(queryset, request)
+        serial = UserCommentSerializer(paged_comments, many=True)
+
+        return paginator.get_paginated_response(serial.data)
+
+    def post(self, request, *args, **kwargs):
+        user = request.auth.user
+        movie = Movie.objects.get(pk=kwargs.get("pk"))
+        user_activity, created = UserActivity.objects.get_or_create(user=user,
+                                                                    movie=movie)
+        user_activity.comment = request.POST.get("comment")
+        if created:
+            user_activity.watched_movie = True
+        user_activity.save()
+
+        return Response({"info": "댓글이 등록되었습니다"}, status=status.HTTP_201_CREATED)
+
+    def patch(self, request, *args, **kwargs):
+        user = request.auth.user
+        movie = Movie.objects.get(pk=kwargs.get("pk"))
+        try:
+            user_activity = UserActivity.objects.get(user=user,
+                                                     movie=movie)
+        except UserActivity.DoesNotExist:
+            return Response({"error": "수정할 댓글이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        user_activity.comment = request.POST.get("comment")
+        user_activity.save()
+
+        return Response({"info": "댓글이 수정되었습니다."}, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        user = request.auth.user
+        movie = Movie.objects.get(pk=kwargs.get("pk"))
+        user_activity = UserActivity.objects.get(user=user,
+                                                 movie=movie)
+
+        if user_activity.score is None and user_activity.wish_movie is False:
+            user_activity.delete()
+        elif user_activity.score is not None:
+            user_activity.comment = None
+            user_activity.save()
+
+        return Response({"info": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
