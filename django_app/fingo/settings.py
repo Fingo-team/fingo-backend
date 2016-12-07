@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'storages',
+    'corsheaders',
 
     'member',
     'movie',
@@ -75,7 +76,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 1
 }
 
 MIDDLEWARE = [
@@ -86,6 +87,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'fingo.urls'
@@ -156,6 +159,19 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
+
+
+# CORS Settings
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8080',
+)
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'PATCH',
+    'POST',
+)
 
 
 # 3rd party setting
