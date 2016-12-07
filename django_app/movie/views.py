@@ -5,9 +5,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from movie.models import Movie, BoxofficeRank
-from user_activity.models import UserActivity
+from fingo_statistics.models import UserActivity
 from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
-from user_activity.serializations import UserCommentSerializer
+from fingo_statistics.serializations import UserCommentSerializer
 from movie import searchMixin
 
 
