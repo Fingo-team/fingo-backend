@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from fingo_statistics.models import UserActivity
 from member.serializations import UserSerializer
+from movie.serializations import UserPageMovieSerializer, UserActivityMoviesDetailSerializer
 
 
 class UserActivitySerializer(serializers.ModelSerializer):
@@ -15,7 +16,7 @@ class UserActivitySerializer(serializers.ModelSerializer):
                   "score",)
 
 
-class UserCommentSerializer(serializers.ModelSerializer):
+class MovieCommentsSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     class Meta:
@@ -23,3 +24,25 @@ class UserCommentSerializer(serializers.ModelSerializer):
         fields = ("user",
                   "comment",
                   "score",)
+
+
+class UserCommentsSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    movie = UserPageMovieSerializer()
+
+    class Meta:
+        model = UserActivity
+        fields = ("user",
+                  "comment",
+                  "score",
+                  "activity_time",
+                  "movie")
+
+
+class UserActivityMoviesSerializer(serializers.ModelSerializer):
+    movie = UserActivityMoviesDetailSerializer()
+
+    class Meta:
+        model = UserActivity
+        fields = ("activity_time",
+                  "movie")
