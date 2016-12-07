@@ -78,6 +78,16 @@ class MovieScore(APIView):
 class MovieWish(APIView):
     permission_classes = (IsAuthenticated,)
 
+    def get(self, request, *args, **kwargs):
+        try:
+            movie = Movie.objects.get(pk=kwargs.get("pk"))
+        except Movie.DoesNotExist:
+            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.auth.user
+        active = UserActivity.objects.get_or_create(user=user,
+                                                    movie=movie)[0]
+        return Response({'wish_movie': active.wish_movie}, status=status.HTTP_200_OK)
+
     def post(self, request, *args, **kwargs):
         try:
             movie = Movie.objects.get(pk=kwargs.get("pk"))
