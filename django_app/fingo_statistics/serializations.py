@@ -15,7 +15,7 @@ class UserActivitySerializer(serializers.ModelSerializer):
                   "score",)
 
 
-class UserCommentSerializer(serializers.HyperlinkedModelSerializer):
+class UserCommentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     class Meta:

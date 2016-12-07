@@ -88,8 +88,7 @@ class MovieComment(APIView):
         # OrderingFilter를 사용할 것 *공식 문서 참고
         paginator.ordering = "-pk"
         paged_comments = paginator.paginate_queryset(queryset, request)
-        serial = UserCommentSerializer(paged_comments, many=True,
-                                       context={"request": request})
+        serial = UserCommentSerializer(paged_comments, many=True)
 
         return paginator.get_paginated_response(serial.data)
 
