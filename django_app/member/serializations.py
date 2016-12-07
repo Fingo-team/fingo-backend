@@ -9,4 +9,5 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id",
                   "nickname",
                   "level",
-                  "user_img")
+                  "user_img",
+                  "cover_img",)
