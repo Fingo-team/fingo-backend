@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from movie.models import Movie, BoxofficeRank
 from fingo_statistics.models import UserActivity
 from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
-from fingo_statistics.serializations import UserCommentSerializer
+from fingo_statistics.serializations import MovieCommentsSerializer
 from movie import searchMixin
 
 from utils.statistics import average
@@ -94,13 +94,17 @@ class MovieComments(APIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
-        movie = Movie.objects.get(pk=kwargs.get("pk"))
+        try:
+            movie = Movie.objects.get(pk=kwargs.get("pk"))
+        except Movie.DoesNotExist:
+            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
         queryset = UserActivity.objects.filter(movie=movie)
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
         # OrderingFilter를 사용할 것 *공식 문서 참고
         paginator.ordering = "-pk"
         paged_comments = paginator.paginate_queryset(queryset, request)
-        serial = UserCommentSerializer(paged_comments, many=True)
+        serial = MovieCommentsSerializer(paged_comments, many=True)
 
         return paginator.get_paginated_response(serial.data)
 
@@ -112,7 +116,7 @@ class MovieAsUserComment(APIView):
         user = request.auth.user
         movie = Movie.objects.get(pk=kwargs.get("pk"))
         user_comment = UserActivity.objects.get(user=user, movie=movie)
-        serial = UserCommentSerializer(user_comment)
+        serial = MovieCommentsSerializer(user_comment)
 
         return Response(serial.data)
 
