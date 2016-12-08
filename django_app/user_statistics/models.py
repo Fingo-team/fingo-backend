@@ -1,6 +1,6 @@
 from django.db import models
 from member.models import FingoUser
-from movie.models import Actor
+from movie.models import Actor, Director
 
 
 class UserStatistics(models.Model):
@@ -77,3 +77,13 @@ class UserActor(models.Model):
     def set_count(self, value):
         self.count += value
         self.save()
+
+
+class UserDirector(models.Model):
+    director = models.ForeignKey(Director)
+    user_statistics = models.ForeignKey(UserStatistics)
+    count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return '{}: {}'.format(self.director.name, self.count)
+
