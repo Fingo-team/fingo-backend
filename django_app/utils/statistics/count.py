@@ -4,17 +4,8 @@ __all__ = [
 ]
 
 
-def count_all(user_activity, value, user):
-    with transaction.atomic():
-        count_movie(user_activity, value, user)
-        count_score(user_activity, user)
-
-
 @transaction.atomic
-def count_movie(user_activity, value, user):
-    user.userstatistics.userscores.set_score(user_activity, value)
+def count_all(user_score, value, user):
+    user.userstatistics.count(value)
+    user.userstatistics.userscores.set_score(user_score, value)
 
-
-@transaction.atomic
-def count_score(user_activity, user):
-    user.userstatistics.count(user_activity)

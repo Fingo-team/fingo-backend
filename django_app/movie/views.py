@@ -81,9 +81,11 @@ class MovieWish(APIView):
         active.watched_movie = not wish_movie
 
         if wish_movie:
-            active.score = None
+            count_all(active.score, -1, user)
+            active.score = 0.0
             active.save()
             average.score_average(movie)
+
         else:
             active.save()
 
@@ -184,18 +186,18 @@ class MovieScore(APIView):
         user_score = float(request.POST["score"])
         if 0.5 <= user_score <= 5.0:
             active.score = user_score
+            count_all(active.score, +1, user)
             active.watched_movie = True
             active.wish_movie = False
             active.save()
             average.score_average(movie)
-            count_all(active, 1, user)
             return Response({'info': '점수가 올바르게 들어갔습니다.'}, status=status.HTTP_200_OK)
         elif user_score == 0.0:
-            active.score = None
+            count_all(active.score, -1, user)
+            active.score = 0.0
             active.watched_movie = False
             active.save()
             average.score_average(movie)
-            count_all(active, -1, user)
             return Response({'info': '해당 영화의 평가가 리셋됩니다.'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
