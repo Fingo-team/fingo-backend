@@ -77,7 +77,7 @@ class MovieWish(APIView):
             wish_movie = False
         else:
             return Response({'error': '올바른 형식이 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        if active.wish_movie == False and wish_movie == True:
+        if not active.wish_movie and wish_movie:
             count_all(movie, active.score, -1, user)
             active.score = 0.0
             active.save()
