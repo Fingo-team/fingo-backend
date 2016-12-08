@@ -98,27 +98,8 @@ class UserActivityMoviesDetailSerializer(serializers.ModelSerializer):
                   "first_run_date")
 
 
-class BoxofficeMovieDetailSerializer(serializers.ModelSerializer):
-    actor = ActorSerializer(read_only=True, many=True)
-    director = DirectorSerializer(read_only=True, many=True)
-    stillcut = StillcutSerializer(read_only=True, many=True,
-                                  source="stillcut_set")
-
-    class Meta:
-        model = Movie
-        fields = ("title",
-                  "actor",
-                  "director",
-                  "genre",
-                  "img",
-                  "stillcut",
-                  "first_run_date",
-                  "score",
-                  "nation_code",)
-
-
 class BoxofficeRankDetailSerializer(serializers.ModelSerializer):
-    movie = BoxofficeMovieDetailSerializer()
+    movie = MovieDetailSerializer()
 
     class Meta:
         model = BoxofficeRank
