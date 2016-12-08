@@ -7,6 +7,7 @@ urlpatterns = [
     url(r"detail/(?P<pk>\d+)/comments/$", views.MovieComments.as_view()),
     # boxoffice
     url(r"boxoffice/$", views.BoxofficeRankList.as_view()),
+    url(r"boxoffice/detail/$", views.BoxofficeRankDetailList.as_view()),
     # search
     url(r"search/", views.MovieSearch.as_view()),
     # score

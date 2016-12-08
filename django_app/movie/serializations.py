@@ -96,3 +96,12 @@ class UserActivityMoviesDetailSerializer(serializers.ModelSerializer):
                   "img",
                   "score",
                   "first_run_date")
+
+
+class BoxofficeRankDetailSerializer(serializers.ModelSerializer):
+    movie = MovieDetailSerializer()
+
+    class Meta:
+        model = BoxofficeRank
+        fields = ("rank",
+                  "movie",)
