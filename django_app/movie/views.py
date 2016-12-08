@@ -58,7 +58,7 @@ class MovieWish(APIView):
             movie = Movie.objects.get(pk=kwargs.get("pk"))
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.auth.user
+        user = request.user
         active = UserActivity.objects.get_or_create(user=user,
                                                     movie=movie)[0]
         return Response({'wish_movie': active.wish_movie}, status=status.HTTP_200_OK)
@@ -68,7 +68,7 @@ class MovieWish(APIView):
             movie = Movie.objects.get(pk=kwargs.get("pk"))
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.auth.user
+        user = request.user
         active = UserActivity.objects.get_or_create(user=user,
                                                     movie=movie)[0]
         if request.POST["wish_movie"] == "True":
@@ -77,17 +77,15 @@ class MovieWish(APIView):
             wish_movie = False
         else:
             return Response({'error': '올바른 형식이 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        active.wish_movie = wish_movie
-        active.watched_movie = not wish_movie
-
-        if wish_movie:
+        if active.wish_movie == False and wish_movie == True:
             count_all(movie, active.score, -1, user)
             active.score = 0.0
             active.save()
             average.score_average(movie)
 
-        else:
-            active.save()
+        active.wish_movie = wish_movie
+        active.watched_movie = not wish_movie
+        active.save()
 
         return Response({'info': '해당 영화의 보고싶어요를 {} 처리 했습니다.'.format(wish_movie)}, status=status.HTTP_200_OK)
 
