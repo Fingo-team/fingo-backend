@@ -66,6 +66,14 @@ class UserScores(models.Model):
         self.save()
 
 
-class UserActors(models.Model):
-    user = models.ForeignKey(FingoUser)
+class UserActor(models.Model):
     actor = models.ForeignKey(Actor)
+    user_statistics = models.ForeignKey(UserStatistics)
+    count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return '{}: {}'.format(self.actor.name, self.count)
+
+    def set_count(self, value):
+        self.count += value
+        self.save()
