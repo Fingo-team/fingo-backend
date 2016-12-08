@@ -10,7 +10,7 @@ from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer,
 from fingo_statistics.serializations import MovieCommentsSerializer
 from movie import searchMixin
 
-from utils.statistics import average
+from utils.statistics import average, count_all
 
 
 class MovieDetail(APIView):
@@ -188,12 +188,14 @@ class MovieScore(APIView):
             active.wish_movie = False
             active.save()
             average.score_average(movie)
+            count_all(active, 1, user)
             return Response({'info': '점수가 올바르게 들어갔습니다.'}, status=status.HTTP_200_OK)
         elif user_score == 0.0:
             active.score = None
             active.watched_movie = False
             active.save()
             average.score_average(movie)
+            count_all(active, -1, user)
             return Response({'info': '해당 영화의 평가가 리셋됩니다.'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
