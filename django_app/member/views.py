@@ -36,7 +36,7 @@ class UserLogout(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        if request.user.auth:
+        if request.user:
             request.user.auth_token.delete()
             return Response({"info": "정상적으로 로그아웃 되었습니다."}, status=status.HTTP_200_OK)
         return Response({"error": "이미 로그아웃 되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
