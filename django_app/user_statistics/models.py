@@ -1,6 +1,6 @@
 from django.db import models
 from member.models import FingoUser
-from movie.models import Actor, Director
+from movie.models import Actor, Director, Nation, Genre
 
 
 class UserStatistics(models.Model):
@@ -13,10 +13,6 @@ class UserStatistics(models.Model):
 
     def __str__(self):
         return '{}: {}개 평가'.format(self.user.nickname, self.movie_count)
-
-    def count(self, value):
-        self.movie_count += value
-        self.save()
 
 
 class UserScores(models.Model):
@@ -87,3 +83,20 @@ class UserDirector(models.Model):
     def __str__(self):
         return '{}: {}'.format(self.director.name, self.count)
 
+
+class UserGenre(models.Model):
+    genre = models.ForeignKey(Genre)
+    user_statistics = models.ForeignKey(UserStatistics)
+    count = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return '{}: {}'.format(self.genre.name, self.count)
+
+
+class UserNation(models.Model):
+    nation = models.ForeignKey(Nation)
+    user_statistics = models.ForeignKey(UserStatistics)
+    count = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return '{}: {}'.format(self.nation.name, self.count)

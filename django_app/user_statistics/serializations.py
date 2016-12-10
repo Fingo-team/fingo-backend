@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from user_statistics.models import UserStatistics, UserScores, UserActor, UserDirector
-from movie.serializations import ActorSerializer , DirectorSerializer
+from user_statistics.models import UserStatistics, UserScores, UserActor, UserDirector, UserGenre, UserNation
+from movie.serializations import ActorSerializer , DirectorSerializer, GenreSerializer, NationSerializer
 
 
 class StatisticsSerializer(serializers.ModelSerializer):
@@ -33,4 +33,22 @@ class StatisticsDirectorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserDirector
+        fields = '__all__'
+
+
+class StatisticsGenreSerializer(serializers.ModelSerializer):
+    user_statistics = StatisticsSerializer(read_only=True)
+    genre = GenreSerializer(read_only=True)
+
+    class Meta:
+        model = UserGenre
+        fields = '__all__'
+
+
+class StatisticsNationSerializer(serializers.ModelSerializer):
+    user_statistics = StatisticsSerializer(read_only=True)
+    nation = NationSerializer(read_only=True)
+
+    class Meta:
+        model = UserNation
         fields = '__all__'
