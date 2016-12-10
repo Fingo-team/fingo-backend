@@ -32,14 +32,14 @@ def create_boxoffice(rank, movie):
 
 def init_boxoffice():
     movie_arr = get_boxoffice_moviename()
-    boxiffice_list = []
+    boxoffice_list = []
 
     for movie in movie_arr:
         time.sleep(1)
-        boxiffice_list.append(crawlingMixin.insert_db(movie))
+        boxoffice_list.append(crawlingMixin.insert_db(movie))
 
     BoxofficeRank.objects.all().delete()
-    for rank, movie in enumerate(boxiffice_list):
+    for rank, movie in enumerate(boxoffice_list):
         create_boxoffice(rank=rank+1, movie=movie)
 
 
