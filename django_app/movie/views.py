@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 
 from movie.models import Movie, BoxofficeRank
 from fingo_statistics.models import UserActivity
-from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
+from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer, \
+    BoxofficeRankDetailSerializer
 from fingo_statistics.serializations import MovieCommentsSerializer
 from movie import searchMixin
 
@@ -29,6 +30,18 @@ class BoxofficeRankList(APIView):
     def get(self, request, *args, **kwargs):
         ranking = BoxofficeRank.objects.all()
         ranking_serial = BoxofficeRankSerializer(ranking, many=True)
+        ret = {
+            "data": ranking_serial.data
+        }
+        return Response(ret)
+
+
+class BoxofficeRankDetailList(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        ranking = BoxofficeRank.objects.all()
+        ranking_serial = BoxofficeRankDetailSerializer(ranking, many=True)
         ret = {
             "data": ranking_serial.data
         }
