@@ -6,9 +6,9 @@ from rest_framework.views import APIView
 
 from movie.models import Movie, BoxofficeRank
 from fingo_statistics.models import UserActivity
-from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer, \
-    BoxofficeRankDetailSerializer
-from fingo_statistics.serializations import MovieCommentsSerializer
+from movie.serializations import  BoxofficeRankDetailSerializer
+from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
+from fingo_statistics.serializations import MovieCommentsSerializer, UserCommentCreateSerailizer
 from movie import searchMixin
 
 from utils.statistics import average
@@ -134,27 +134,25 @@ class MovieAsUserComment(APIView):
         return Response(serial.data)
 
     def post(self, request, *args, **kwargs):
-        user = request.auth.user
         movie = Movie.objects.get(pk=kwargs.get("pk"))
-        user_activity, created = UserActivity.objects.get_or_create(user=user,
-                                                                    movie=movie)
-        user_activity.comment = request.POST.get("comment")
-        if created:
-            user_activity.watched_movie = True
-        user_activity.save()
+        serial = UserCommentCreateSerailizer(data=request.data,
+                                             context={"request": request,
+                                                      "movie": movie})
+        if serial.is_valid():
+            serial.save()
 
         return Response({"info": "댓글이 등록되었습니다"}, status=status.HTTP_201_CREATED)
 
     def patch(self, request, *args, **kwargs):
         user = request.auth.user
         movie = Movie.objects.get(pk=kwargs.get("pk"))
-        try:
-            user_activity = UserActivity.objects.get(user=user,
-                                                     movie=movie)
-        except UserActivity.DoesNotExist:
-            return Response({"error": "수정할 댓글이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        user_activity.comment = request.POST.get("comment")
-        user_activity.save()
+        ua = UserActivity.objects.get(user=user, movie=movie)
+        serial = UserCommentCreateSerailizer(ua,
+                                             data=request.data,
+                                             partial=True)
+
+        if serial.is_valid():
+            serial.save()
 
         return Response({"info": "댓글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
