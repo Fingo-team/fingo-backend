@@ -65,7 +65,7 @@ class UserScores(models.Model):
 class UserActor(models.Model):
     actor = models.ForeignKey(Actor)
     user_statistics = models.ForeignKey(UserStatistics)
-    count = models.IntegerField(default=0)
+    count = models.FloatField(default=0.0)
 
     def __str__(self):
         return '{}: {}'.format(self.actor.name, self.count)
@@ -78,7 +78,7 @@ class UserActor(models.Model):
 class UserDirector(models.Model):
     director = models.ForeignKey(Director)
     user_statistics = models.ForeignKey(UserStatistics)
-    count = models.IntegerField(default=0)
+    count = models.FloatField(default=0.0)
 
     def __str__(self):
         return '{}: {}'.format(self.director.name, self.count)
