@@ -7,4 +7,5 @@ urlpatterns = [
     url(r"directors/$", views.StatisticsDirectors.as_view()),
     url(r"genres/$", views.StatisticsGenres.as_view()),
     url(r"nations/$", views.StatisticsNations.as_view()),
+    url(r"all/$", views.StatisticsAll.as_view()),
 ]

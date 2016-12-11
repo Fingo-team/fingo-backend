@@ -19,36 +19,32 @@ class StatisticsScoresSerializer(serializers.ModelSerializer):
 
 
 class StatisticsActorSerializer(serializers.ModelSerializer):
-    user_statistics = StatisticsSerializer(read_only=True)
     actor = ActorSerializer(read_only=True)
 
     class Meta:
         model = UserActor
-        fields = '__all__'
+        fields = ('actor', 'count',)
 
 
 class StatisticsDirectorSerializer(serializers.ModelSerializer):
-    user_statistics = StatisticsSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
 
     class Meta:
         model = UserDirector
-        fields = '__all__'
+        fields = ('director', 'count',)
 
 
 class StatisticsGenreSerializer(serializers.ModelSerializer):
-    user_statistics = StatisticsSerializer(read_only=True)
     genre = GenreSerializer(read_only=True)
 
     class Meta:
         model = UserGenre
-        fields = '__all__'
+        fields = ('genre', 'count',)
 
 
 class StatisticsNationSerializer(serializers.ModelSerializer):
-    user_statistics = StatisticsSerializer(read_only=True)
     nation = NationSerializer(read_only=True)
 
     class Meta:
         model = UserNation
-        fields = '__all__'
+        fields = ('nation', 'count',)
