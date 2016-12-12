@@ -58,9 +58,10 @@ def count_score(user_score, value, user):
 def count_all(movie, user_score, value, user):
     count_movie(value, user)
     count_score(user_score, value, user)
-    count_actor(movie, value, user)
-    count_director(movie, value, user)
-    count_genre(movie, value, user)
-    count_nation(movie, value, user)
+    weighted_value = user_score / 5 * value
+    count_actor(movie, weighted_value, user)
+    count_director(movie, weighted_value, user)
+    count_genre(movie, weighted_value, user)
+    count_nation(movie, weighted_value, user)
 
 
