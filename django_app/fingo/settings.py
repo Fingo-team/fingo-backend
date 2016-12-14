@@ -44,7 +44,7 @@ AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = [
     "eb-fingo-real.ap-northeast-2.elasticbeanstalk.com",
-    "fingo-dev.ap-northeast-2.elasticbeanstalk.com"
+    "fingo2-dev.ap-northeast-2.elasticbeanstalk.com"
 ]
 
 
