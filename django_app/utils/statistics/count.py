@@ -12,7 +12,8 @@ def count_actor(movie, value, user):
     for actor in actors:
         user_actor, created = UserActor.objects.get_or_create(actor=actor,
                                                               user_statistics=user.userstatistics)
-        user_actor.set_count(value)
+        user_actor.count += value
+        user_actor.save()
 
 
 def count_director(movie, value, user):
@@ -58,6 +59,7 @@ def count_score(user_score, value, user):
 def count_all(movie, user_score, value, user):
     count_movie(value, user)
     count_score(user_score, value, user)
+
     weighted_value = user_score / 5 * value
     count_actor(movie, weighted_value, user)
     count_director(movie, weighted_value, user)

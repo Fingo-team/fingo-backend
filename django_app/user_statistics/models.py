@@ -36,7 +36,6 @@ class UserScores(models.Model):
         return '{}의 score'.format(self.user_statistics.user.nickname)
 
     def set_score(self, user_score, value):
-        print('value: {}'.format(value))
         if user_score == 0.5:
             self.point_five += value
         elif user_score == 1.0:
@@ -69,10 +68,6 @@ class UserActor(models.Model):
 
     def __str__(self):
         return '{}: {}'.format(self.actor.name, self.count)
-
-    def set_count(self, value):
-        self.count += value
-        self.save()
 
 
 class UserDirector(models.Model):
