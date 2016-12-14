@@ -21,6 +21,7 @@ apipatterns = [
     url(r'^user/', include("member.urls")),
     url(r'^movie/', include("movie.urls")),
     url(r'^activity/', include("fingo_statistics.urls")),
+    url(r'^statistics/', include("user_statistics.urls")),
 ]
 
 
