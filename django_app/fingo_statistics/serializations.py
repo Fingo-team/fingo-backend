@@ -53,13 +53,14 @@ class UserCommentCreateSerailizer(serializers.ModelSerializer):
 
     class Meta:
         model = UserActivity
-        fields = ("comment",)
+        fields = ("comment",
+                  "movie",)
 
     def create(self, validated_data):
         ua = UserActivity(**validated_data)
         user = self.context.get("request").auth.user
         ua.user = user
-        ua.movie = self.context.get("movie")
+        ua.movie = validated_data.get("movie")
         ua.watched_movie = True
         ua.save()
 

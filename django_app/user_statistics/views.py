@@ -6,6 +6,7 @@ from user_statistics.models import UserStatistics, UserScores, UserActor, UserDi
 from user_statistics.serializations import StatisticsScoresSerializer, StatisticsActorSerializer, StatisticsDirectorSerializer, \
     StatisticsGenreSerializer, StatisticsNationSerializer
 
+
 class StatisticsScores(APIView):
     permission_classes = (IsAuthenticated,)
 
