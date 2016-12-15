@@ -19,15 +19,14 @@ from apis.image_file.resizing_image import create_thumbnail
 class UserLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        serial_data = UserLoginSerializer(data=request.data)
-        if serial_data.is_valid():
-            fingo_user = authenticate(email=serial_data.validated_data["email"],
-                                      password=serial_data.validated_data["password"])
+        serial_data = UserLoginSerializer(request.data)
+        fingo_user = authenticate(email=serial_data.data["email"],
+                                  password=serial_data.data["password"])
 
-            if fingo_user:
-                token = Token.objects.get_or_create(user=fingo_user)[0]
-                ret = {"token": token.key}
-                return Response(ret, status=status.HTTP_200_OK)
+        if fingo_user:
+            token = Token.objects.get_or_create(user=fingo_user)[0]
+            ret = {"token": token.key}
+            return Response(ret, status=status.HTTP_200_OK)
         return Response({"error": "아이디 혹은 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 

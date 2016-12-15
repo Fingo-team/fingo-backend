@@ -3,7 +3,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import generics, mixins
+from rest_framework import generics
 
 from movie.models import Movie, BoxofficeRank
 from fingo_statistics.models import UserActivity
@@ -117,10 +117,9 @@ class MovieComments(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         movie = kwargs.get("pk")
-        queryset = self.get_queryset()
-        obj = get_object_or_404(queryset, movie=movie)
+        queryset = self.get_queryset().filter(movie=movie)
         self.paginator.ordering = "-activity_time"
-        page = self.paginate_queryset(obj)
+        page = self.paginate_queryset(queryset)
         serial_data = self.get_serializer(page, many=True)
 
         return self.get_paginated_response(serial_data.data)
@@ -143,7 +142,7 @@ class MovieComments(generics.ListAPIView):
 
 
 class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
-                         mixins.CreateModelMixin):
+                         generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserCommentCreateSerailizer
     queryset = UserActivity.objects.all()
@@ -153,8 +152,7 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
         user = request.auth.user
         movie = Movie.objects.get(pk=kwargs.get("pk"))
         ua = get_object_or_404(queryset, user=user, movie=movie)
-        serializer = UserCommentsSerializer
-        serial_data = serializer(ua)
+        serial_data = UserCommentsSerializer(ua)
 
         return Response(serial_data.data)
 
@@ -169,16 +167,15 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
     #     return Response({"info": "댓글이 등록되었습니다"}, status=status.HTTP_201_CREATED)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data,
-                                         context={"request": request})
+        request.data["movie"] = kwargs.get("pk")
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        user_comment = UserActivity.objects.get(user=user, movie=movie)
-        serial = MovieCommentsSerializer(user_comment)
+        serializer.save()
 
-        return Response(serial.data)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
 
     def patch(self, request, *args, **kwargs):
         user = request.auth.user
