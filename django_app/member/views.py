@@ -54,10 +54,12 @@ class UserSignUp(APIView):
             except IntegrityError as e:
                 if "email" in str(e):
                     return Response({"error": "이미 존재하는 email 입니다."}, status=status.HTTP_400_BAD_REQUEST)
-                elif "nickname" in str(e):
-                    return Response({"error": "이미 존재하는 nickname 입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
             else:
                 return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'info': '입력형식이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserActivate(APIView):
