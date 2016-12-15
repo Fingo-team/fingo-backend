@@ -90,17 +90,22 @@ class MovieWish(APIView):
             wish_movie = False
         else:
             return Response({'error': '올바른 형식이 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        if not active.wish_movie and wish_movie:
+
+        change_average = False
+
+        if not active.wish_movie and active.watched_movie and wish_movie:
             count_all(movie, active.score, -1, user)
-            active.score = 0.0
-            active.save()
-            average.score_average(movie)
+            active.score = float(0)
+            change_average = True
+            active.watched_movie = False
 
         active.wish_movie = wish_movie
-        active.watched_movie = not wish_movie
         active.save()
 
-        return Response({'info': '해당 영화의 보고싶어요를 {} 처리 했습니다.'.format(wish_movie)}, status=status.HTTP_200_OK)
+        if change_average:
+            average.score_average(movie)
+
+        return Response({'wish_movie': active.wish_movie}, status=status.HTTP_200_OK)
 
 
 class MovieComments(APIView):
