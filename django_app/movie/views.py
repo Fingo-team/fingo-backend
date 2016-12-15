@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics
+from django.db.utils import IntegrityError
 
 from movie.models import Movie, BoxofficeRank
 from fingo_statistics.models import UserActivity
@@ -170,7 +171,11 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
         request.data["movie"] = kwargs.get("pk")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            serializer.save()
+        except IntegrityError:
+            return Response({"error": "이미 있는 comment입니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data,
