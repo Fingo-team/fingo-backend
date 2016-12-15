@@ -2,6 +2,14 @@ from rest_framework import serializers
 from member.models import FingoUser
 
 
+class UserLoginSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FingoUser
+        fields = ("email",
+                  "password",)
+
+
 class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -11,8 +19,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
                   "password",)
 
     def create(self, validated_data):
-        user = FingoUser(**validated_data)
-        user.save()
+        user = FingoUser.objects.create_user(**validated_data)
 
         return user
 

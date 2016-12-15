@@ -1,5 +1,5 @@
 import requests
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.files.base import ContentFile
 
-from member.forms import FingoUserForm, UserSignupForm
+from member.serializations import UserCreateSerializer, UserLoginSerializer
 from member.models import FingoUser, UserHash
 from apis.image_file.resizing_image import create_thumbnail
 
@@ -19,10 +19,10 @@ from apis.image_file.resizing_image import create_thumbnail
 class UserLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        form = FingoUserForm(data=request.POST)
-        if form.is_valid():
-            fingo_user = authenticate(email=form.cleaned_data["email"],
-                                      password=form.cleaned_data["password"])
+        serial_data = UserLoginSerializer(data=request.data)
+        if serial_data.is_valid():
+            fingo_user = authenticate(email=serial_data.validated_data["email"],
+                                      password=serial_data.validated_data["password"])
 
             if fingo_user:
                 token = Token.objects.get_or_create(user=fingo_user)[0]
@@ -42,15 +42,15 @@ class UserLogout(APIView):
         return Response({"error": "이미 로그아웃 되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserSignUp(APIView):
+class UserSignUp(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserCreateSerializer
 
-    def post(self, request, *args, **kwargs):
-        form = UserSignupForm(data=request.POST)
-        if form.is_valid():
+    def create(self, request, *args, **kwargs):
+        serial_data = self.get_serializer(data=request.data)
+        if serial_data.is_valid():
             try:
-                FingoUser.objects.create_user(email=form.cleaned_data["email"],
-                                              password=form.cleaned_data["password"],
-                                              nickname=form.cleaned_data["nickname"])
+                serial_data.save()
             except IntegrityError as e:
                 if "email" in str(e):
                     return Response({"error": "이미 존재하는 email 입니다."}, status=status.HTTP_400_BAD_REQUEST)
