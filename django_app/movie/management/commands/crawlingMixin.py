@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import json
 
-from movie.models import Actor, StillCut, Movie, Director, MovieActorDetail
+from movie.models import Actor, StillCut, Movie, Director, MovieActorDetail, Genre, Nation
 
 
 def get_actor_director(url):
@@ -54,11 +54,13 @@ def create_movie_object(res_dic):
             movie = Movie.objects.get(daum_code=daum_code)
         except:
             title = res_dic["channel"]["item"][0]["title"][0]["content"]
-            genre = res_dic["channel"]["item"][0]["genre"][0]["content"]
+            #genre = res_dic["channel"]["item"][0]["genre"][0]["content"]
             story = res_dic["channel"]["item"][0]["story"][0]["content"]
             movie_img = res_dic["channel"]["item"][0]["thumbnail"][0]["content"]
             first_run_date = res_dic["channel"]["item"][0]["open_info"][0]["content"]
-            nation = res_dic["channel"]["item"][0]["nation"][0]["content"]
+            #nation = res_dic["channel"]["item"][0]["nation"][0]["content"]
+            nations = res_dic["channel"]["item"][0]["nation"]
+            genres = res_dic["channel"]["item"][0]["genre"]
             to_date = datetime.strptime(first_run_date.replace(".", "-"), "%Y-%m-%d")
 
             appear_dic = get_actor_director(movie_url)
@@ -79,18 +81,36 @@ def create_movie_object(res_dic):
                  "role": actor["role"]}
                 for actor in appear_dic["actors"]
             ]
+            genre_arr = [
+                Genre.objects.get_or_create(name=genre["content"])[0]
+                for genre in genres
+            ]
 
+            nation_arr = [
+                Nation.objects.get_or_create(name=nation["content"])[0]
+                for nation in nations
+            ]
+
+            # movie = Movie(daum_code=daum_code,
+            #               title=title,
+            #               genre=genre,
+            #               story=story,
+            #               img=movie_img,
+            #               first_run_date=to_date,
+            #               nation_code=nation)
             movie = Movie(daum_code=daum_code,
                           title=title,
-                          genre=genre,
                           story=story,
                           img=movie_img,
                           first_run_date=to_date,
-                          nation_code=nation)
+                          )
+
             # from IPython import embed; embed()
             movie.save()
 
             movie.director.add(*director_arr)
+            movie.genre.add(*genre_arr)
+            movie.nation_code.add(*nation_arr)
 
             stillcut_list = [
                 res_dic["channel"]["item"][0]["photo"+str(i)]["content"].split("=")[1].replace("%3A", ":").replace("%2F","/")

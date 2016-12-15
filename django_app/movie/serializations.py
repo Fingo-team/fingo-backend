@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from movie.models import Movie, Actor, Director, StillCut, BoxofficeRank
+from movie.models import Movie, Actor, Director, StillCut, BoxofficeRank, Genre, Nation
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -25,6 +25,20 @@ class StillcutSerializer(serializers.ModelSerializer):
         fields = ("img",)
 
 
+class NationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Nation
+        fields = ("name",)
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = ("name",)
+
+
 class MovieTitleSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -35,6 +49,8 @@ class MovieTitleSerializer(serializers.ModelSerializer):
 class MovieDetailSerializer(serializers.ModelSerializer):
     actor = ActorSerializer(read_only=True, many=True)
     director = DirectorSerializer(read_only=True, many=True)
+    genre = GenreSerializer(read_only=True, many=True)
+    nation_code = NationSerializer(read_only=True, many=True)
     stillcut = StillcutSerializer(read_only=True,
                                   many=True,
                                   source="stillcut_set")
@@ -54,6 +70,9 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
 
 class BoxofficeMovieSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(read_only=True, many=True)
+    nation_code = NationSerializer(read_only=True, many=True)
+
     class Meta:
         model = Movie
         fields = ("id",

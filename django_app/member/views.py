@@ -94,7 +94,7 @@ class UserProfileImgUpload(APIView):
 class UserFacebookLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        access_token = request.POST.get("access_token")
+        access_token = request.data.get("access_token")
         url_debug_token = 'https://graph.facebook.com/debug_token?' \
                           'input_token={it}&' \
                           'access_token={at}'.format(

@@ -12,7 +12,7 @@ from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer,
 from fingo_statistics.serializations import MovieCommentsSerializer, UserCommentCreateSerailizer, UserCommentsSerializer
 from movie import searchMixin
 
-from utils.statistics import average
+from utils.statistics import average, count_all
 
 
 class MovieDetail(generics.RetrieveAPIView):
@@ -54,7 +54,7 @@ class MovieSearch(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        movie_name = request.GET.get("q")
+        movie_name = request.query_params.get('q')
         # DB에 충분한 data가 쌓일 시 아래 코드 활성화
         # movies = Movie.objects.filter(title__contains=movie_name)
         # if list(movies) == []:
@@ -73,7 +73,7 @@ class MovieWish(APIView):
             movie = Movie.objects.get(pk=kwargs.get("pk"))
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.auth.user
+        user = request.user
         active = UserActivity.objects.get_or_create(user=user,
                                                     movie=movie)[0]
         return Response({'wish_movie': active.wish_movie}, status=status.HTTP_200_OK)
@@ -83,26 +83,31 @@ class MovieWish(APIView):
             movie = Movie.objects.get(pk=kwargs.get("pk"))
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.auth.user
+        user = request.user
         active = UserActivity.objects.get_or_create(user=user,
                                                     movie=movie)[0]
-        if request.POST["wish_movie"] == "True":
+        if request.data.get("wish_movie") == "True":
             wish_movie = True
-        elif request.POST["wish_movie"] == "False":
+        elif request.data.get("wish_movie") == "False":
             wish_movie = False
         else:
             return Response({'error': '올바른 형식이 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        change_average = False
+
+        if not active.wish_movie and active.watched_movie and wish_movie:
+            count_all(movie, active.score, -1, user)
+            active.score = float(0)
+            change_average = True
+            active.watched_movie = False
+
         active.wish_movie = wish_movie
-        active.watched_movie = not wish_movie
+        active.save()
 
-        if wish_movie:
-            active.score = None
-            active.save()
+        if change_average:
             average.score_average(movie)
-        else:
-            active.save()
 
-        return Response({'info': '해당 영화의 보고싶어요를 {} 처리 했습니다.'.format(wish_movie)}, status=status.HTTP_200_OK)
+        return Response({'wish_movie': active.wish_movie}, status=status.HTTP_200_OK)
 
 
 class MovieComments(generics.ListAPIView):
@@ -170,6 +175,10 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        user_comment = UserActivity.objects.get(user=user, movie=movie)
+        serial = MovieCommentsSerializer(user_comment)
+
+        return Response(serial.data)
 
     def patch(self, request, *args, **kwargs):
         user = request.auth.user
@@ -181,6 +190,13 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
 
         if serial.is_valid():
             self.perform_update(serial)
+        try:
+            user_activity = UserActivity.objects.get(user=user,
+                                                     movie=movie)
+        except UserActivity.DoesNotExist:
+            return Response({"error": "수정할 댓글이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        user_activity.comment = request.data.get("comment")
+        user_activity.save()
 
         return Response({"info": "댓글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
@@ -220,16 +236,18 @@ class MovieScore(APIView):
         user = request.auth.user
         active = UserActivity.objects.get_or_create(user=user,
                                                     movie=movie)[0]
-        user_score = float(request.POST["score"])
+        user_score = float(request.data.get("score"))
         if 0.5 <= user_score <= 5.0:
             active.score = user_score
+            count_all(movie, active.score, +1, user)
             active.watched_movie = True
             active.wish_movie = False
             active.save()
             average.score_average(movie)
             return Response({'info': '점수가 올바르게 들어갔습니다.'}, status=status.HTTP_200_OK)
         elif user_score == 0.0:
-            active.score = None
+            count_all(movie, active.score, -1, user)
+            active.score = 0.0
             active.watched_movie = False
             active.save()
             average.score_average(movie)
