@@ -19,7 +19,7 @@ from apis.image_file.resizing_image import create_thumbnail
 class UserLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        form = FingoUserForm(data=request.POST)
+        form = FingoUserForm(data=request.data)
         if form.is_valid():
             fingo_user = authenticate(email=form.cleaned_data["email"],
                                       password=form.cleaned_data["password"])
@@ -45,7 +45,7 @@ class UserLogout(APIView):
 class UserSignUp(APIView):
 
     def post(self, request, *args, **kwargs):
-        form = UserSignupForm(data=request.POST)
+        form = UserSignupForm(data=request.data)
         if form.is_valid():
             try:
                 FingoUser.objects.create_user(email=form.cleaned_data["email"],
@@ -94,7 +94,7 @@ class UserProfileImgUpload(APIView):
 class UserFacebookLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        access_token = request.POST.get("access_token")
+        access_token = request.data.get("access_token")
         url_debug_token = 'https://graph.facebook.com/debug_token?' \
                           'input_token={it}&' \
                           'access_token={at}'.format(
