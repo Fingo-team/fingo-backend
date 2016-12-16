@@ -6,11 +6,11 @@ from rest_framework.views import APIView
 
 from fingo_statistics.models import UserActivity
 from fingo_statistics.serializations import MovieCommentsSerializer, UserCommentCreateSerailizer, UserCommentsSerializer
-from movie import searchMixin
 from movie.models import Movie, BoxofficeRank
 from movie.serializations import BoxofficeRankDetailSerializer
 from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
 from utils.activity import average
+from utils.movie import searchMixin
 from utils.statistics import count_all
 
 

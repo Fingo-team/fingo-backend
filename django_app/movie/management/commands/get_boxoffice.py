@@ -1,11 +1,12 @@
-from django.core.management.base import BaseCommand
-from movie.management.commands import crawlingMixin
-from datetime import datetime
 import time
+from datetime import datetime
+
 import requests
-import os
 from bs4 import BeautifulSoup
+from django.core.management.base import BaseCommand
+
 from movie.models import BoxofficeRank
+from utils.movie import crawlingMixin
 
 
 def get_boxoffice_moviename():

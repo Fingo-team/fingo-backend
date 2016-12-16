@@ -1,9 +1,11 @@
-from django.core.management.base import BaseCommand
-from movie.management.commands import crawlingMixin
-import requests
 import time
 from datetime import datetime
+
+import requests
 from bs4 import BeautifulSoup
+from django.core.management.base import BaseCommand
+
+from utils.movie import crawlingMixin
 
 
 def get_all_moviename(page_num):

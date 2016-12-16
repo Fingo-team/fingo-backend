@@ -1,9 +1,11 @@
-from django.conf import settings
 import json
-import requests
 from datetime import datetime
+
+import requests
+from django.conf import settings
+
 from movie.models import Movie, Actor, Director, StillCut, MovieActorDetail, Genre, Nation
-from movie.management.commands import crawlingMixin
+from utils.movie import crawlingMixin
 
 
 def search_movie(movie_name):
