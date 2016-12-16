@@ -4,7 +4,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics
-from django.db.utils import IntegrityError
 
 from movie.models import Movie, BoxofficeRank
 from fingo_statistics.models import UserActivity
@@ -142,8 +141,7 @@ class MovieComments(generics.ListAPIView):
     #     return paginator.get_paginated_response(serial.data)
 
 
-class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
-                         generics.CreateAPIView):
+class MovieAsUserComment(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserCommentCreateSerailizer
     queryset = UserActivity.objects.all()
@@ -167,38 +165,40 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView,
     #
     #     return Response({"info": "댓글이 등록되었습니다"}, status=status.HTTP_201_CREATED)
 
-    def create(self, request, *args, **kwargs):
-        request.data["movie"] = kwargs.get("pk")
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+    def post(self, request, *args, **kwargs):
+        user = request.auth.user
+        movie = Movie.objects.get(pk=kwargs.get("pk"))
         try:
-            serializer.save()
-        except IntegrityError:
+            ua = UserActivity.objects.get(user=user, movie=movie)
+        except:
+            return Response({"error": "별점 평가부터 진행해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        if ua.comment is not None:
             return Response({"error": "이미 있는 comment입니다."},
                             status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer = self.get_serializer(ua,
+                                             data=request.data,
+                                             partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
 
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data,
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED,
+                            headers=headers)
 
     def patch(self, request, *args, **kwargs):
         user = request.auth.user
         movie = Movie.objects.get(pk=kwargs.get("pk"))
-        ua = UserActivity.objects.get(user=user, movie=movie)
+        try:
+            ua = UserActivity.objects.get(user=user, movie=movie)
+        except:
+            return Response({"error": "수정할 댓글이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
         serial = self.get_serializer(ua,
                                      data=request.data,
                                      partial=True)
-
-        if serial.is_valid():
+        if serial.is_valid(raise_exception=True):
             self.perform_update(serial)
-        try:
-            user_activity = UserActivity.objects.get(user=user,
-                                                     movie=movie)
-        except UserActivity.DoesNotExist:
-            return Response({"error": "수정할 댓글이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        user_activity.comment = request.data.get("comment")
-        user_activity.save()
 
         return Response({"info": "댓글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
