@@ -16,4 +16,6 @@ urlpatterns = [
     url(r"^(?P<pk>\d+)/comment/$", views.MovieAsUserComment.as_view()),
     # wish
     url(r"^wish/(?P<pk>\d+)/$", views.MovieWish.as_view()),
+    # random
+    url(r"^random/$", views.MovieRandomList.as_view()),
 ]

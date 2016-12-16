@@ -256,3 +256,18 @@ class MovieScore(APIView):
             return Response({'info': '해당 영화의 평가가 리셋됩니다.'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MovieRandomList(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        uas = UserActivity.objects.filter(user=user)
+        movie_ids = [ua.movie.id for ua in uas]
+        random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids)[:30]
+        serial = BoxofficeMovieSerializer(random_movies, many=True)
+        ret = {
+            'data': serial.data
+        }
+        return Response(ret, status=status.HTTP_200_OK)
