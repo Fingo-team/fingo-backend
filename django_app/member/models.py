@@ -80,5 +80,6 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
 
 
 class UserHash(models.Model):
-    user = models.ForeignKey(FingoUser)
+    user = models.ForeignKey(FingoUser,
+                             on_delete=models.CASCADE)
     hashed_email = models.CharField(max_length=200)
