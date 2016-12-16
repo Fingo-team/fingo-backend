@@ -267,4 +267,7 @@ class MovieRandomList(APIView):
         movie_ids = [ua.movie.id for ua in uas]
         random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids)[:30]
         serial = BoxofficeMovieSerializer(random_movies, many=True)
-        return Response(serial.data, status=status.HTTP_200_OK)
+        ret = {
+            'data': serial.data
+        }
+        return Response(ret, status=status.HTTP_200_OK)
