@@ -211,7 +211,7 @@ class MovieAsUserComment(generics.RetrieveUpdateAPIView):
         if serial.is_valid(raise_exception=True):
             self.perform_update(serial)
 
-        return Response({"info": "댓글이 수정되었습니다."}, status=status.HTTP_200_OK)
+        return Response({"info": serial.data}, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         user = request.auth.user
