@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -76,8 +77,11 @@ class MovieWish(APIView):
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
         user = request.user
-        active = UserActivity.objects.get_or_create(user=user,
-                                                    movie=movie)[0]
+        try:
+            active = UserActivity.objects.get(user=user,
+                                              movie=movie)
+        except UserActivity.DoesNotExist:
+            return Response({'wish_movie': False}, status=status.HTTP_200_OK)
         return Response({'wish_movie': active.wish_movie}, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
@@ -149,13 +153,18 @@ class MovieAsUserComment(generics.RetrieveUpdateAPIView):
     queryset = UserActivity.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
         user = request.auth.user
-        movie = Movie.objects.get(pk=kwargs.get("pk"))
-        ua = get_object_or_404(queryset, user=user, movie=movie)
+        try:
+            movie = Movie.objects.get(pk=kwargs.get("pk"))
+        except Movie.DoesNotExist:
+            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            ua = UserActivity.objects.get(user=user, movie=movie)
+        except UserActivity.DoesNotExist:
+            return Response({"comment": None}, status=status.HTTP_200_OK)
         serial_data = UserCommentsSerializer(ua)
 
-        return Response(serial_data.data)
+        return Response(serial_data.data, status=status.HTTP_200_OK)
 
     # def post(self, request, *args, **kwargs):
     #     # movie = Movie.objects.get(pk=kwargs.get("pk"))
@@ -227,9 +236,12 @@ class MovieScore(APIView):
             movie = Movie.objects.get(pk=kwargs.get("pk"))
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.auth.user
-        active = UserActivity.objects.get_or_create(user=user,
-                                                    movie=movie)[0]
+        user = request.user
+        try:
+            active = UserActivity.objects.get(user=user,
+                                              movie=movie)
+        except UserActivity.DoesNotExist:
+            return Response({'score': 0.0}, status=status.HTTP_200_OK)
         return Response({'score': active.score}, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
@@ -258,3 +270,18 @@ class MovieScore(APIView):
             return Response({'info': '해당 영화의 평가가 리셋됩니다.'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MovieRandomList(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        uas = UserActivity.objects.filter(user=user)
+        movie_ids = [ua.movie.id for ua in uas]
+        random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids)[:30]
+        serial = BoxofficeMovieSerializer(random_movies, many=True)
+        ret = {
+            'data': serial.data
+        }
+        return Response(ret, status=status.HTTP_200_OK)
