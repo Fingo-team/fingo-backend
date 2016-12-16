@@ -33,9 +33,11 @@ class BoxofficeRankList(generics.ListAPIView):
     queryset = BoxofficeRank.objects.all().order_by("rank")
     pagination_class = None
 
-    # def get_queryset(self):
-    #     queryset = self.queryset
-    #     return queryset.order_by("rank")
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serial = self.get_serializer(queryset, many=True)
+
+        return Response({"data": serial.data})
 
 
 class BoxofficeRankDetailList(APIView):
