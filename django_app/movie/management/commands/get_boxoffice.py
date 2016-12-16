@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
 from movie.models import BoxofficeRank
-from utils.movie import crawlingMixin
+from utils.movie import movieMixin
 
 
 def get_boxoffice_moviename():
@@ -37,7 +37,7 @@ def init_boxoffice():
 
     for movie in movie_arr:
         time.sleep(1)
-        boxoffice_list.append(crawlingMixin.insert_db(movie))
+        boxoffice_list.append(movieMixin.search_movie(movie, boxoffice=True))
 
     BoxofficeRank.objects.all().delete()
     for rank, movie in enumerate(boxoffice_list):

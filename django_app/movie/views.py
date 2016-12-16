@@ -10,7 +10,7 @@ from movie.models import Movie, BoxofficeRank
 from movie.serializations import BoxofficeRankDetailSerializer
 from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
 from utils.activity import average
-from utils.movie import searchMixin
+from utils.movie import movieMixin
 from utils.statistics import count_all
 
 
@@ -60,7 +60,7 @@ class MovieSearch(APIView):
         # movies = Movie.objects.filter(title__contains=movie_name)
         # if list(movies) == []:
         #     movies = searchMixin.search_movie(movie_name)
-        searchMixin.search_movie(movie_name)
+        movieMixin.search_movie(movie_name)
         fingodb_movies = Movie.objects.filter(title__contains=movie_name)
         serial = BoxofficeMovieSerializer(fingodb_movies, many=True)
         return Response(serial.data)
