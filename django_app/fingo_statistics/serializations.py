@@ -1,8 +1,15 @@
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
+from rest_framework import status
 from fingo_statistics.models import UserActivity
 from member.serializations import UserSerializer
 from movie.serializations import UserPageMovieSerializer, UserActivityMoviesDetailSerializer
 from django.utils.dateparse import parse_datetime
+
+
+class CommentDoesNotExisit(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = u"댓글을 입력해 주세요"
 
 
 class TimeConvertModelSerializer(serializers.ModelSerializer):
@@ -78,7 +85,9 @@ class UserCommentCreateSerailizer(serializers.ModelSerializer):
         return ua
 
     def update(self, instance, validated_data):
-        instance.comment = validated_data.get("comment")
+        if validated_data["comment"] is None:
+            raise CommentDoesNotExisit()
+        instance.comment = validated_data["comment"]
         instance.save()
 
         return instance
