@@ -151,12 +151,14 @@ class MovieAsUserComment(generics.RetrieveUpdateAPIView):
     queryset = UserActivity.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
         user = request.auth.user
-        movie = Movie.objects.get(pk=kwargs.get("pk"))
         try:
-            ua = get_object_or_404(queryset, user=user, movie=movie)
-        except Http404:
+            movie = Movie.objects.get(pk=kwargs.get("pk"))
+        except Movie.DoesNotExist:
+            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            ua = UserActivity.objects.get(user=user, movie=movie)
+        except UserActivity.DoesNotExist:
             return Response({"comment": None}, status=status.HTTP_200_OK)
         serial_data = UserCommentsSerializer(ua)
 
