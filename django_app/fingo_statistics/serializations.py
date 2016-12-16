@@ -2,6 +2,16 @@ from rest_framework import serializers
 from fingo_statistics.models import UserActivity
 from member.serializations import UserSerializer
 from movie.serializations import UserPageMovieSerializer, UserActivityMoviesDetailSerializer
+from django.utils.dateparse import parse_datetime
+
+
+class TimeConvertModelSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        parsing_time = parse_datetime(ret["activity_time"]).replace(microsecond=0)
+        ret["activity_time"] = parsing_time.strftime("%Y-%m-%d %H:%M:%S")
+
+        return ret
 
 
 class UserActivitySerializer(serializers.ModelSerializer):
@@ -16,7 +26,7 @@ class UserActivitySerializer(serializers.ModelSerializer):
                   "score",)
 
 
-class MovieCommentsSerializer(serializers.ModelSerializer):
+class MovieCommentsSerializer(TimeConvertModelSerializer):
     user = UserSerializer()
 
     class Meta:
@@ -24,10 +34,11 @@ class MovieCommentsSerializer(serializers.ModelSerializer):
         fields = ("user",
                   "movie",
                   "comment",
-                  "score",)
+                  "score",
+                  "activity_time",)
 
 
-class UserCommentsSerializer(serializers.ModelSerializer):
+class UserCommentsSerializer(TimeConvertModelSerializer):
     user = UserSerializer()
     movie = UserPageMovieSerializer()
 
@@ -40,7 +51,7 @@ class UserCommentsSerializer(serializers.ModelSerializer):
                   "movie")
 
 
-class UserActivityMoviesSerializer(serializers.ModelSerializer):
+class UserActivityMoviesSerializer(TimeConvertModelSerializer):
     movie = UserActivityMoviesDetailSerializer()
 
     class Meta:

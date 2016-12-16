@@ -91,8 +91,6 @@ class BoxofficeRankSerializer(serializers.ModelSerializer):
         model = BoxofficeRank
         fields = ("rank",
                   "movie",)
-        ordering = "rank"
-
 
 
 class UserPageMovieSerializer(serializers.ModelSerializer):
