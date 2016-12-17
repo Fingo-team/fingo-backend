@@ -13,7 +13,10 @@ def count_actor(movie, value, user):
         user_actor, created = UserActor.objects.get_or_create(actor=actor,
                                                               user_statistics=user.userstatistics)
         user_actor.count += value
-        user_actor.save()
+        if user_actor.count:
+            user_actor.save()
+        else:
+            user_actor.delete()
 
 
 def count_director(movie, value, user):
@@ -22,7 +25,10 @@ def count_director(movie, value, user):
         user_director, created = UserDirector.objects.get_or_create(director=director,
                                                                     user_statistics=user.userstatistics)
         user_director.count += value
-        user_director.save()
+        if user_director.count:
+            user_director.save()
+        else:
+            user_director.delete()
 
 
 def count_genre(movie, value, user):
@@ -31,7 +37,10 @@ def count_genre(movie, value, user):
         user_genre, created = UserGenre.objects.get_or_create(genre=genre,
                                                               user_statistics=user.userstatistics)
         user_genre.count += value
-        user_genre.save()
+        if user_genre.count:
+            user_genre.save()
+        else:
+            user_genre.delete()
 
 
 def count_nation(movie, value, user):
@@ -40,7 +49,10 @@ def count_nation(movie, value, user):
         user_nation, created = UserNation.objects.get_or_create(nation=nation,
                                                                 user_statistics=user.userstatistics)
         user_nation.count += value
-        user_nation.save()
+        if user_nation.count:
+            user_nation.save()
+        else:
+            user_nation.delete()
 
 
 def count_movie(value, user):
