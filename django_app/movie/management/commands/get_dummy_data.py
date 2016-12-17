@@ -35,6 +35,7 @@ def init_naver_movie():
         for cnt, movie in enumerate(movie_arr[page_num]):
             if cnt != 0 and cnt % 10 == 0:
                 time.sleep(1)
+            print('{}페이지의 {}'.format(page_num, movie[1]))
             searchMixin.search_movie(movie[1])
             time.sleep(1)
 

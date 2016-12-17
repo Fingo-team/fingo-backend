@@ -55,7 +55,6 @@ def search_movie(movie_name, boxoffice=False):
 
 def create_movie_object(res_dic):
     if res_dic is not None and len(res_dic) != 0:
-        print(res_dic)
         movie_url = res_dic["story"][0]["link"]
         if movie_url != "":
             daum_code = movie_url.split("=")[1]
@@ -132,6 +131,7 @@ def create_movie_object(res_dic):
                                                            "role": actor["role"]
                                                        })
         finally:
+            print(movie)
             return movie
     else:
         pass
