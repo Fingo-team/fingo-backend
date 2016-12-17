@@ -1,9 +1,8 @@
-from django.conf import settings
+import json
 import requests
+from django.conf import settings
 from bs4 import BeautifulSoup
 from datetime import datetime
-import json
-
 from movie.models import Actor, StillCut, Movie, Director, MovieActorDetail, Genre, Nation
 
 
@@ -28,39 +27,51 @@ def get_actor_director(url):
         else:
             actor_arr.append(ret_dic)
 
-    return {"actors": actor_arr,
-            "directors": director_arr}
+    return {
+            "actors": actor_arr,
+            "directors": director_arr
+           }
 
 
-def insert_db(movie_name):
+def search_movie(movie_name, boxoffice=False):
     req = "https://apis.daum.net/contents/movie?apikey={apikey}" \
           "&output=json&q={movie_name}".format(apikey=settings.DAUM_API_KEY,
                                                movie_name=movie_name)
-    res = requests.get(req)
 
+    res = requests.get(req)
     res_dic = json.loads(res.text)
 
-    return create_movie_object(res_dic=res_dic)
+    if boxoffice:
+        return create_movie_object(res_dic["channel"]["item"][0])
+    else:
+        ret_movie_instance = []
+        for movie_dic in res_dic["channel"]["item"]:
+            movie = create_movie_object(movie_dic)
+            if movie is not None:
+                ret_movie_instance.append(movie)
+
+        return ret_movie_instance
 
 
 def create_movie_object(res_dic):
-    if res_dic.get("channel") is not None and len(res_dic["channel"]["item"]) != 0:
-        movie_url = res_dic["channel"]["item"][0]["story"][0]["link"]
-        daum_code = movie_url.split("=")[1]
+    if res_dic is not None and len(res_dic) != 0:
+        movie_url = res_dic["story"][0]["link"]
+        if movie_url != "":
+            daum_code = movie_url.split("=")[1]
+        else:
+            return None
 
         movie = None
 
         try:
             movie = Movie.objects.get(daum_code=daum_code)
-        except:
-            title = res_dic["channel"]["item"][0]["title"][0]["content"]
-            #genre = res_dic["channel"]["item"][0]["genre"][0]["content"]
-            story = res_dic["channel"]["item"][0]["story"][0]["content"]
-            movie_img = res_dic["channel"]["item"][0]["thumbnail"][0]["content"]
-            first_run_date = res_dic["channel"]["item"][0]["open_info"][0]["content"]
-            #nation = res_dic["channel"]["item"][0]["nation"][0]["content"]
-            nations = res_dic["channel"]["item"][0]["nation"]
-            genres = res_dic["channel"]["item"][0]["genre"]
+        except Movie.DoesNotExist:
+            title = res_dic["title"][0]["content"]
+            story = res_dic["story"][0]["content"]
+            movie_img = res_dic["thumbnail"][0]["content"]
+            first_run_date = res_dic["open_info"][0]["content"]
+            genres = res_dic["genre"]
+            nations = res_dic["nation"]
             to_date = datetime.strptime(first_run_date.replace(".", "-"), "%Y-%m-%d")
 
             appear_dic = get_actor_director(movie_url)
@@ -71,7 +82,7 @@ def create_movie_object(res_dic):
                                                    "name": director["name"],
                                                    "img": director["img"]})[0]
                 for director in appear_dic["directors"]
-            ]
+                ]
 
             actor_arr = [
                 {"actor": Actor.objects.get_or_create(daum_code=actor["daum_id"],
@@ -80,45 +91,37 @@ def create_movie_object(res_dic):
                                                           "img": actor["img"]})[0],
                  "role": actor["role"]}
                 for actor in appear_dic["actors"]
-            ]
+                ]
+
             genre_arr = [
                 Genre.objects.get_or_create(name=genre["content"])[0]
                 for genre in genres
-            ]
+                ]
 
             nation_arr = [
                 Nation.objects.get_or_create(name=nation["content"])[0]
                 for nation in nations
-            ]
+                ]
 
-            # movie = Movie(daum_code=daum_code,
-            #               title=title,
-            #               genre=genre,
-            #               story=story,
-            #               img=movie_img,
-            #               first_run_date=to_date,
-            #               nation_code=nation)
             movie = Movie(daum_code=daum_code,
                           title=title,
                           story=story,
                           img=movie_img,
-                          first_run_date=to_date,
                           )
-
-            # from IPython import embed; embed()
+            if to_date != "":
+                movie.first_run_date = to_date.date()
             movie.save()
 
-            movie.director.add(*director_arr)
             movie.genre.add(*genre_arr)
             movie.nation_code.add(*nation_arr)
-
+            movie.director.add(*director_arr)
             stillcut_list = [
-                res_dic["channel"]["item"][0]["photo"+str(i)]["content"].split("=")[1].replace("%3A", ":").replace("%2F","/")
+                res_dic["photo"+str(i)]["content"].split("=")[1].replace("%3A", ":").replace("%2F","/")
                 for i in range(1, 6)
             ]
 
-            for img in stillcut_list:
-                StillCut.objects.get_or_create(img=img,
+            for img_url in stillcut_list:
+                StillCut.objects.get_or_create(img=img_url,
                                                movie=movie)
 
             for actor in actor_arr:
@@ -128,6 +131,7 @@ def create_movie_object(res_dic):
                                                            "role": actor["role"]
                                                        })
         finally:
+            print(movie)
             return movie
     else:
         pass

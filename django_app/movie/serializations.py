@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from movie.models import Movie, Actor, Director, StillCut, BoxofficeRank, Genre, Nation
+from movie.models import Movie, Actor, Director, StillCut, BoxofficeRank, Genre, Nation, MovieActorDetail
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -8,6 +8,15 @@ class ActorSerializer(serializers.ModelSerializer):
         model = Actor
         fields = ("name",
                   "img",)
+
+
+class ActorDetailSerializer(serializers.ModelSerializer):
+    actor = ActorSerializer(read_only=True)
+
+    class Meta:
+        model = MovieActorDetail
+        fields = ("actor",
+                  "role",)
 
 
 class DirectorSerializer(serializers.ModelSerializer):
@@ -47,10 +56,12 @@ class MovieTitleSerializer(serializers.ModelSerializer):
 
 
 class MovieDetailSerializer(serializers.ModelSerializer):
-    actor = ActorSerializer(read_only=True, many=True)
     director = DirectorSerializer(read_only=True, many=True)
     genre = GenreSerializer(read_only=True, many=True)
     nation_code = NationSerializer(read_only=True, many=True)
+    actors = ActorDetailSerializer(read_only=True,
+                                   many=True,
+                                   source="movieactordetail_set")
     stillcut = StillcutSerializer(read_only=True,
                                   many=True,
                                   source="stillcut_set")
@@ -58,7 +69,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ("title",
-                  "actor",
+                  "actors",
                   "director",
                   "genre",
                   "story",
