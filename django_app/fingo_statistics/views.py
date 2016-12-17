@@ -33,7 +33,7 @@ class UserComments(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.auth.user
-        user_comments = UserActivity.objects.filter(user=user)#.order_by("-activity_time")
+        user_comments = UserActivity.objects.filter(user=user).exclude(comment=None)
 
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
         paginator.ordering = "-activity_time"
