@@ -119,7 +119,7 @@ class MovieComments(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         movie = kwargs.get("pk")
-        queryset = self.get_queryset().filter(movie=movie)
+        queryset = self.get_queryset().filter(movie=movie).exclude(comment=None)
         self.paginator.ordering = "-activity_time"
         page = self.paginate_queryset(queryset)
         serial_data = self.get_serializer(page, many=True)
