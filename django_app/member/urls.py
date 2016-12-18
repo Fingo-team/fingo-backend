@@ -9,5 +9,4 @@ urlpatterns = [
     url(r'^activate/(?P<hash>.*)/$', views.UserActivate.as_view()),
     url(r'^upload_profile/$', views.UserProfileImgUpload.as_view()),
     url(r'^fb_login/$', views.UserFacebookLogin.as_view()),
-    url(r'^test/$', views.TestView.as_view()),
 ]

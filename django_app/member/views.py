@@ -129,10 +129,3 @@ class UserFacebookLogin(APIView):
         r = requests.get(url_request_user_info)
         user_info = r.json()
         return user_info
-
-
-class TestView(APIView):
-    permission_classes = (AllowAny,)
-
-    def get(self, request, *args, **kwargs):
-        return Response({"msg": "test complete"})
