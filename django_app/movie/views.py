@@ -1,8 +1,10 @@
+from rest_framework.reverse import reverse
 from rest_framework.settings import api_settings
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from datetime import datetime
 
 from fingo_statistics.models import UserActivity
 from fingo_statistics.serializations import MovieCommentsSerializer, UserCommentCreateSerailizer, UserCommentsSerializer
@@ -11,6 +13,40 @@ from movie.serializations import BoxofficeRankDetailSerializer, MovieDetailSeria
 from utils.activity import average
 from utils.movie import searchMixin
 from utils.statistics import count_all
+
+
+class MovieMainView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        this_month = datetime.now().month
+        boxoffice = BoxofficeRank.objects.first().movie
+        boxoffice_stillcut = boxoffice.stillcut_set.first().img
+        boxoffice_url = "http://"+request.META["HTTP_HOST"]+reverse("api:movie:boxoffice")
+        month_movie_queryset = Movie.objects.filter(first_run_date__month=this_month)[:1]
+        month_movie_stillcut = month_movie_queryset[0].stillcut_set.first().img
+        month_movie_url = "http://"+request.META["HTTP_HOST"]+reverse("api:movie:month")
+
+        ret_dic = {
+            "boxoffice_stillcut": boxoffice_stillcut,
+            "boxoffice_url": boxoffice_url,
+            "month_movie": month_movie_stillcut,
+            "month_movie_url": month_movie_url
+        }
+
+        return Response({"data": ret_dic})
+
+
+class MonthMovieList(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        this_month = datetime.now().month
+        queryset = Movie.objects.filter(first_run_date__month=this_month)\
+                       .order_by("score")[:10]
+        serial = BoxofficeMovieSerializer(queryset, many=True)
+
+        return Response({"data": serial.data})
 
 
 class MovieDetail(generics.RetrieveAPIView):
@@ -277,3 +313,4 @@ class MovieRandomList(APIView):
             'data': serial.data
         }
         return Response(ret, status=status.HTTP_200_OK)
+

@@ -19,7 +19,7 @@ from django.contrib import admin
 
 apipatterns = [
     url(r'^user/', include("member.urls")),
-    url(r'^movie/', include("movie.urls")),
+    url(r'^movie/', include("movie.urls", namespace="movie")),
     url(r'^activity/', include("fingo_statistics.urls")),
     url(r'^statistics/', include("user_statistics.urls")),
 ]
@@ -27,5 +27,5 @@ apipatterns = [
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/v1.0/', include(apipatterns)),
+    url(r'^api/v1.0/', include(apipatterns, namespace="api")),
 ]

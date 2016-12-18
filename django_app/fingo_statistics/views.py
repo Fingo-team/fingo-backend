@@ -7,7 +7,8 @@ from fingo_statistics.models import UserActivity
 from fingo_statistics.serializations import UserCommentsSerializer, UserActivityMoviesSerializer
 from member.models import FingoUser
 from member.serializations import UserSerializer
-from utils.movie.ordering_mixin import UserActionOrdering
+from utils.movie.ordering_mixin import OrderingSelect
+
 
 class UserDetailView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -28,7 +29,7 @@ class UserDetailView(APIView):
                         status=status.HTTP_200_OK)
 
 
-class UserComments(APIView, UserActionOrdering):
+class UserCommentsSelect(APIView, OrderingSelect):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
@@ -39,7 +40,7 @@ class UserComments(APIView, UserActionOrdering):
             exclude(comment=None).order_by(ordering)
 
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
-        paginator.ordering = "-activity_time"
+        paginator.ordering = ordering
         paged_comments = paginator.paginate_queryset(user_comments, request)
 
         serial = UserCommentsSerializer(paged_comments, many=True)
@@ -47,7 +48,7 @@ class UserComments(APIView, UserActionOrdering):
         return paginator.get_paginated_response(serial.data)
 
 
-class UserWishMovies(APIView, UserActionOrdering):
+class UserWishMoviesSelect(APIView, OrderingSelect):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
@@ -58,7 +59,7 @@ class UserWishMovies(APIView, UserActionOrdering):
             filter(wish_movie=True).order_by(ordering)
 
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
-        paginator.ordering = "-activity_time"
+        paginator.ordering = ordering
         paged_wish_movies = paginator.paginate_queryset(user_wish_movies, request)
 
         serial = UserActivityMoviesSerializer(paged_wish_movies, many=True)
@@ -66,7 +67,7 @@ class UserWishMovies(APIView, UserActionOrdering):
         return paginator.get_paginated_response(serial.data)
 
 
-class UserWatchedMovies(APIView):
+class UserWatchedMoviesSelect(APIView, OrderingSelect):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
@@ -77,7 +78,7 @@ class UserWatchedMovies(APIView):
             filter(watched_movie=True).order_by(ordering)
 
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
-        paginator.ordering = "-activity_time"
+        paginator.ordering = ordering
         paged_watched_movies = paginator.paginate_queryset(user_watched_movies, request)
 
         serial = UserActivityMoviesSerializer(paged_watched_movies, many=True)
