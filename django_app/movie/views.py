@@ -8,7 +8,7 @@ from datetime import datetime
 
 from fingo_statistics.models import UserActivity
 from fingo_statistics.serializations import MovieCommentsSerializer, UserCommentCreateSerailizer, UserCommentsSerializer
-from movie.models import Movie, BoxofficeRank
+from movie.models import Movie, BoxofficeRank, Genre
 from movie.serializations import BoxofficeRankDetailSerializer, MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
 from utils.activity import average
 from utils.movie import searchMixin
@@ -26,12 +26,21 @@ class MovieMainView(APIView):
         month_movie_queryset = Movie.objects.filter(first_run_date__month=this_month)[:1]
         month_movie_stillcut = month_movie_queryset[0].stillcut_set.first().img
         month_movie_url = "http://"+request.META["HTTP_HOST"]+reverse("api:movie:month")
+        random_genre = Genre.objects.all().order_by("?")[:1]
+        genre_name = random_genre[0].name
+        genre_movie_queryset = Movie.objects.filter(genre__name=genre_name)
+        genre_movie_stillcut = genre_movie_queryset[0].stillcut_set.first().img
+        genre_movie_url = "http://"+request.META["HTTP_HOST"]\
+                           +reverse("api:movie:genre")+\
+                           "?genre={genre}".format(genre=genre_name)
 
         ret_dic = {
             "boxoffice_stillcut": boxoffice_stillcut,
             "boxoffice_url": boxoffice_url,
             "month_movie": month_movie_stillcut,
-            "month_movie_url": month_movie_url
+            "month_movie_url": month_movie_url,
+            "genre_movie_stillcut": genre_movie_stillcut,
+            "genre_movie_url": genre_movie_url
         }
 
         return Response({"data": ret_dic})
@@ -44,6 +53,19 @@ class MonthMovieList(APIView):
         this_month = datetime.now().month
         queryset = Movie.objects.filter(first_run_date__month=this_month)\
                        .order_by("score")[:10]
+        serial = BoxofficeMovieSerializer(queryset, many=True)
+
+        return Response({"data": serial.data})
+
+
+class GenreMovieList(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        genre = request.query_params.get("genre")
+        queryset = Movie.objects.filter(genre__name=genre)\
+                       .order_by("score")[:10]
+        print(queryset.count())
         serial = BoxofficeMovieSerializer(queryset, many=True)
 
         return Response({"data": serial.data})

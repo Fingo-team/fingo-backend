@@ -12,6 +12,8 @@ urlpatterns = [
     url(r"boxoffice/detail/$", views.BoxofficeRankDetailList.as_view()),
     # month movie
     url(r"month/$", views.MonthMovieList.as_view(), name="month"),
+    # random genre movie
+    url(r"genre/$", views.GenreMovieList.as_view(), name="genre"),
     # search
     url(r"^search/", views.MovieSearch.as_view()),
     # score
