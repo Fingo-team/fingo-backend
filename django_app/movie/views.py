@@ -1,18 +1,16 @@
-from rest_framework import status
 from rest_framework.settings import api_settings
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import generics
 
-from movie.models import Movie, BoxofficeRank
 from fingo_statistics.models import UserActivity
-from movie.serializations import BoxofficeRankDetailSerializer
-from movie.serializations import MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
 from fingo_statistics.serializations import MovieCommentsSerializer, UserCommentCreateSerailizer, UserCommentsSerializer
-from movie import searchMixin
-
-from utils.statistics import average, count_all
+from movie.models import Movie, BoxofficeRank
+from movie.serializations import BoxofficeRankDetailSerializer, MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
+from utils.activity import average
+from utils.movie import searchMixin
+from utils.statistics import count_all
 
 
 class MovieDetail(generics.RetrieveAPIView):
@@ -126,7 +124,7 @@ class MovieComments(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         movie = kwargs.get("pk")
-        queryset = self.get_queryset().filter(movie=movie)
+        queryset = self.get_queryset().filter(movie=movie).exclude(comment=None)
         self.paginator.ordering = "-activity_time"
         page = self.paginate_queryset(queryset)
         serial_data = self.get_serializer(page, many=True)

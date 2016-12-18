@@ -1,11 +1,10 @@
-from django.core.management.base import BaseCommand
-from movie.management.commands import crawlingMixin
-from datetime import datetime
 import time
 import requests
-import os
+from datetime import datetime
 from bs4 import BeautifulSoup
+from django.core.management.base import BaseCommand
 from movie.models import BoxofficeRank
+from utils.movie import searchMixin
 
 
 def get_boxoffice_moviename():
@@ -36,7 +35,7 @@ def init_boxoffice():
 
     for movie in movie_arr:
         time.sleep(1)
-        boxoffice_list.append(crawlingMixin.insert_db(movie))
+        boxoffice_list.append(searchMixin.search_movie(movie, boxoffice=True))
 
     BoxofficeRank.objects.all().delete()
     for rank, movie in enumerate(boxoffice_list):
