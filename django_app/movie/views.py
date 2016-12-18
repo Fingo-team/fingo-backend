@@ -1,6 +1,5 @@
-from django.http import Http404
 from rest_framework import status
-from rest_framework.generics import get_object_or_404
+from rest_framework.settings import api_settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -64,8 +63,12 @@ class MovieSearch(APIView):
         #     movies = searchMixin.search_movie(movie_name)
         searchMixin.search_movie(movie_name)
         fingodb_movies = Movie.objects.filter(title__contains=movie_name)
-        serial = BoxofficeMovieSerializer(fingodb_movies, many=True)
-        return Response(serial.data)
+        paginator = api_settings.DEFAULT_PAGINATION_CLASS()
+        paginator.ordering = "pk"
+        paged_result = paginator.paginate_queryset(fingodb_movies, request)
+        serial = BoxofficeMovieSerializer(paged_result, many=True)
+
+        return paginator.get_paginated_response(serial.data)
 
 
 class MovieWish(APIView):
