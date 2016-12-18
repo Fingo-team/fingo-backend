@@ -166,7 +166,7 @@ USE_TZ = True
 # CORS Settings
 CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
-    'http://fingo.herokuapp.com',
+    'fingo.herokuapp.com',
 )
 
 CORS_ALLOW_METHODS = (
