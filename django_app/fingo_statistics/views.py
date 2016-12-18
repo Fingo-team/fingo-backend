@@ -60,6 +60,7 @@ class UserWishMoviesSelect(APIView, OrderingSelect):
 
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
         paginator.ordering = ordering
+        paginator.page_size = 30
         paged_wish_movies = paginator.paginate_queryset(user_wish_movies, request)
 
         serial = UserActivityMoviesSerializer(paged_wish_movies, many=True)
@@ -79,6 +80,7 @@ class UserWatchedMoviesSelect(APIView, OrderingSelect):
 
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
         paginator.ordering = ordering
+        paginator.page_size = 30
         paged_watched_movies = paginator.paginate_queryset(user_watched_movies, request)
 
         serial = UserActivityMoviesSerializer(paged_watched_movies, many=True)

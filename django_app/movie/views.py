@@ -189,7 +189,7 @@ class MovieAsUserComment(generics.RetrieveUpdateAPIView):
         try:
             ua = UserActivity.objects.get(user=user, movie=movie)
         except UserActivity.DoesNotExist:
-            return Response({"comment": None}, status=status.HTTP_200_OK)
+            return Response({"error": "별점 평가부터 진행해 주세요."}, status=status.HTTP_200_OK)
         serial_data = UserCommentsSerializer(ua)
 
         return Response(serial_data.data, status=status.HTTP_200_OK)
@@ -209,7 +209,7 @@ class MovieAsUserComment(generics.RetrieveUpdateAPIView):
         movie = Movie.objects.get(pk=kwargs.get("pk"))
         try:
             ua = UserActivity.objects.get(user=user, movie=movie)
-        except:
+        except UserActivity.DoesNotExist:
             return Response({"error": "별점 평가부터 진행해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
         if ua.comment is not None:
             return Response({"error": "이미 있는 comment입니다."},
