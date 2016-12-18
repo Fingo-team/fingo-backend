@@ -35,8 +35,8 @@ EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
-# DEBUG = True
+# DEBUG = True if (len(sys.argv) > 1 and sys.argv[1] == "runserver") else False
+DEBUG = True
 STATIC_S3 = True if DEBUG is False else False
 # STATIC_S3 = True
 
@@ -78,7 +78,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
 
