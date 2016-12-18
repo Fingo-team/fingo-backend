@@ -18,12 +18,6 @@ class MovieDetail(generics.RetrieveAPIView):
     serializer_class = MovieDetailSerializer
     queryset = Movie.objects.all()
 
-    # def get(self, request, *args, **kwargs):
-    #     movie = Movie.objects.get(pk=kwargs.get("pk"))
-    #     serial = MovieDetailSerializer(movie, context={"request": request})
-    #
-    #     return Response(serial.data)
-
 
 class BoxofficeRankList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -44,10 +38,7 @@ class BoxofficeRankDetailList(APIView):
     def get(self, request, *args, **kwargs):
         ranking = BoxofficeRank.objects.all()
         ranking_serial = BoxofficeRankDetailSerializer(ranking, many=True)
-        ret = {
-            "data": ranking_serial.data
-        }
-        return Response(ret)
+        return Response({"data": ranking_serial.data})
 
 
 class MovieSearch(APIView):
@@ -124,7 +115,7 @@ class MovieComments(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         movie = kwargs.get("pk")
-        queryset = self.get_queryset().filter(movie=movie).exclude(comment=None)
+        queryset = self.get_queryset().filter(movie=movie).exclude(comment=None).order_by("-activity_time")
         self.paginator.ordering = "-activity_time"
         page = self.paginate_queryset(queryset)
         serial_data = self.get_serializer(page, many=True)
