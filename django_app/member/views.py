@@ -1,7 +1,7 @@
 import requests
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.files.base import ContentFile
 
-from member.forms import FingoUserForm, UserSignupForm
+from member.serializations import UserCreateSerializer, UserLoginSerializer
 from member.models import FingoUser, UserHash
 from apis.image_file.resizing_image import create_thumbnail
 
@@ -19,15 +19,14 @@ from apis.image_file.resizing_image import create_thumbnail
 class UserLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        form = FingoUserForm(data=request.POST)
-        if form.is_valid():
-            fingo_user = authenticate(email=form.cleaned_data["email"],
-                                      password=form.cleaned_data["password"])
+        serial_data = UserLoginSerializer(request.data)
+        fingo_user = authenticate(email=serial_data.data["email"],
+                                  password=serial_data.data["password"])
 
-            if fingo_user:
-                token = Token.objects.get_or_create(user=fingo_user)[0]
-                ret = {"token": token.key}
-                return Response(ret, status=status.HTTP_200_OK)
+        if fingo_user:
+            token = Token.objects.get_or_create(user=fingo_user)[0]
+            ret = {"token": token.key}
+            return Response(ret, status=status.HTTP_200_OK)
         return Response({"error": "아이디 혹은 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -36,28 +35,30 @@ class UserLogout(APIView):
 
     def post(self, request, *args, **kwargs):
 
-        if request.user.auth:
+        if request.user:
             request.user.auth_token.delete()
-            return Response({"info": "정상적으로 로그인 되었습니다."}, status=status.HTTP_200_OK)
+            return Response({"info": "정상적으로 로그아웃 되었습니다."}, status=status.HTTP_200_OK)
         return Response({"error": "이미 로그아웃 되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserSignUp(APIView):
+class UserSignUp(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserCreateSerializer
 
-    def post(self, request, *args, **kwargs):
-        form = UserSignupForm(data=request.POST)
-        if form.is_valid():
+    def create(self, request, *args, **kwargs):
+        serial_data = self.get_serializer(data=request.data)
+        if serial_data.is_valid():
             try:
-                FingoUser.objects.create_user(email=form.cleaned_data["email"],
-                                              password=form.cleaned_data["password"],
-                                              nickname=form.cleaned_data["nickname"])
+                serial_data.save()
             except IntegrityError as e:
                 if "email" in str(e):
                     return Response({"error": "이미 존재하는 email 입니다."}, status=status.HTTP_400_BAD_REQUEST)
-                elif "nickname" in str(e):
-                    return Response({"error": "이미 존재하는 nickname 입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
             else:
                 return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'info': '입력형식이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserActivate(APIView):
@@ -94,7 +95,7 @@ class UserProfileImgUpload(APIView):
 class UserFacebookLogin(APIView):
 
     def post(self, request, *args, **kwargs):
-        access_token = request.POST.get("access_token")
+        access_token = request.data.get("access_token")
         url_debug_token = 'https://graph.facebook.com/debug_token?' \
                           'input_token={it}&' \
                           'access_token={at}'.format(
