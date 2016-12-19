@@ -20,4 +20,3 @@ def send_activation_mail(user_email, hashed_email):
         settings.DEFAULT_FROM_EMAIL,
         [user_email],
     )
-    print("send mail!")

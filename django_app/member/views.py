@@ -13,7 +13,7 @@ from django.core.files.base import ContentFile
 
 from member.serializations import UserCreateSerializer, UserLoginSerializer
 from member.models import FingoUser, UserHash
-from apis.image_file.resizing_image import create_thumbnail
+from utils.image_file.resizing_image import create_thumbnail
 
 
 class UserLogin(APIView):

@@ -131,7 +131,6 @@ def create_movie_object(res_dic):
                                                            "role": actor["role"]
                                                        })
         finally:
-            print(movie)
             return movie
     else:
         pass
