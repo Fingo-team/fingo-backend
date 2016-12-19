@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from movie.models import Movie
 from passlib.hash import pbkdf2_sha512
-from apis.mail import send_auth_mail
+from utils.mail import send_auth_mail
 
 
 class FingoUserManager(BaseUserManager):
