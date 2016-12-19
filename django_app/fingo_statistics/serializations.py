@@ -3,7 +3,7 @@ from rest_framework.exceptions import APIException
 from rest_framework import status
 from fingo_statistics.models import UserActivity
 from member.serializations import UserSerializer
-from movie.serializations import UserPageMovieSerializer, UserActivityMoviesDetailSerializer
+from movie.serializations import UserPageMovieSerializer, ActivityAsMovieSerializer
 from django.utils.dateparse import parse_datetime
 
 
@@ -59,7 +59,7 @@ class UserCommentsSerializer(TimeConvertModelSerializer):
 
 
 class UserActivityMoviesSerializer(TimeConvertModelSerializer):
-    movie = UserActivityMoviesDetailSerializer()
+    movie = ActivityAsMovieSerializer()
 
     class Meta:
         model = UserActivity

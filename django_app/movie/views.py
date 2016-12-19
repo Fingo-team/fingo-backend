@@ -9,7 +9,8 @@ from datetime import datetime
 from fingo_statistics.models import UserActivity
 from fingo_statistics.serializations import MovieCommentsSerializer, UserCommentCreateSerailizer, UserCommentsSerializer
 from movie.models import Movie, BoxofficeRank, Genre
-from movie.serializations import BoxofficeRankDetailSerializer, MovieDetailSerializer, BoxofficeRankSerializer, BoxofficeMovieSerializer
+from movie.serializations import BoxofficeRankDetailSerializer, MovieDetailSerializer, BoxofficeRankSerializer,\
+                                 SimpleMovieSerializer
 from utils.activity import average
 from utils.movie import searchMixin
 from utils.statistics import count_all
@@ -55,7 +56,7 @@ class MonthMovieList(APIView):
         this_month = datetime.now().month
         queryset = Movie.objects.filter(first_run_date__month=this_month)\
                        .order_by("score")[:10]
-        serial = BoxofficeMovieSerializer(queryset, many=True)
+        serial = SimpleMovieSerializer(queryset, many=True)
 
         return Response({"data": serial.data})
 
@@ -67,7 +68,7 @@ class GenreMovieList(APIView):
         genre = request.query_params.get("genre")
         queryset = Movie.objects.filter(genre__name=genre)\
                        .order_by("score")[:10]
-        serial = BoxofficeMovieSerializer(queryset, many=True)
+        serial = SimpleMovieSerializer(queryset, many=True)
 
         return Response({"data": serial.data})
 
@@ -114,7 +115,7 @@ class MovieSearch(APIView):
         paginator = api_settings.DEFAULT_PAGINATION_CLASS()
         paginator.ordering = "pk"
         paged_result = paginator.paginate_queryset(fingodb_movies, request)
-        serial = BoxofficeMovieSerializer(paged_result, many=True)
+        serial = SimpleMovieSerializer(paged_result, many=True)
 
         return paginator.get_paginated_response(serial.data)
 
@@ -331,7 +332,7 @@ class MovieRandomList(APIView):
         uas = UserActivity.objects.filter(user=user)
         movie_ids = [ua.movie.id for ua in uas]
         random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids)[:30]
-        serial = BoxofficeMovieSerializer(random_movies, many=True)
+        serial = SimpleMovieSerializer(random_movies, many=True)
         ret = {
             'data': serial.data
         }

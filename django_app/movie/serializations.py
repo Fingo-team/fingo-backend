@@ -80,7 +80,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
                   "nation_code",)
 
 
-class BoxofficeMovieSerializer(serializers.ModelSerializer):
+class SimpleMovieSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     nation_code = NationSerializer(read_only=True, many=True)
 
@@ -96,7 +96,7 @@ class BoxofficeMovieSerializer(serializers.ModelSerializer):
 
 
 class BoxofficeRankSerializer(serializers.ModelSerializer):
-    movie = BoxofficeMovieSerializer()
+    movie = SimpleMovieSerializer()
 
     class Meta:
         model = BoxofficeRank
@@ -117,7 +117,7 @@ class UserPageMovieSerializer(serializers.ModelSerializer):
                   "stillcut")
 
 
-class UserActivityMoviesDetailSerializer(serializers.ModelSerializer):
+class ActivityAsMovieSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
