@@ -39,7 +39,7 @@ class MovieMainView(APIView):
             "boxoffice_stillcut": boxoffice_stillcut,
             "boxoffice_url": boxoffice_url,
             "month": this_month,
-            "month_movie": month_movie_stillcut,
+            "month_movie_stillcut": month_movie_stillcut,
             "month_movie_url": month_movie_url,
             "genre": genre_name,
             "genre_movie_stillcut": genre_movie_stillcut,
