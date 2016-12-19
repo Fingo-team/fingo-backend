@@ -67,7 +67,6 @@ class GenreMovieList(APIView):
         genre = request.query_params.get("genre")
         queryset = Movie.objects.filter(genre__name=genre)\
                        .order_by("score")[:10]
-        print(queryset.count())
         serial = BoxofficeMovieSerializer(queryset, many=True)
 
         return Response({"data": serial.data})
