@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework import status
+from django.utils.dateparse import parse_datetime
+from django.conf import settings
+from pytz import timezone
 from fingo_statistics.models import UserActivity
 from member.serializations import UserSerializer
 from movie.serializations import UserPageMovieSerializer, ActivityAsMovieSerializer
-from django.utils.dateparse import parse_datetime
 
 
 class CommentDoesNotExisit(APIException):
@@ -15,7 +17,8 @@ class CommentDoesNotExisit(APIException):
 class TimeConvertModelSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        parsing_time = parse_datetime(ret["activity_time"]).replace(microsecond=0)
+        current_time_zone = timezone(settings.TIME_ZONE)
+        parsing_time = parse_datetime(ret["activity_time"]).replace(microsecond=0).astimezone(current_time_zone)
         ret["activity_time"] = parsing_time.strftime("%Y-%m-%d %H:%M:%S")
 
         return ret
