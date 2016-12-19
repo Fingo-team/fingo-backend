@@ -46,7 +46,7 @@ ALLOWED_HOSTS = [
     "eb-fingo-real.ap-northeast-2.elasticbeanstalk.com",
     "fingo2-dev.ap-northeast-2.elasticbeanstalk.com",
     "unripers.com",
-    "stardustrain.com",
+    ".stardustrain.com",
 ]
 
 
