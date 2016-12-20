@@ -4,8 +4,11 @@ from PIL import Image, ImageOps
 from io import BytesIO
 
 
-def create_thumbnail(image):
-    size = 200, 200
+def create_thumbnail(image, kind):
+    if kind == "user_img":
+        size = 200, 200
+    elif kind == "cover_img":
+        size = 400, 300
     im = Image.open(image)
     image = ImageOps.fit(im, size, Image.ANTIALIAS)
 

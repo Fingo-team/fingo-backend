@@ -59,10 +59,13 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=False)
     user_img = models.ImageField(blank=True,
                                  upload_to="user_img")
+    user_img_url = models.URLField(blank=True)
     activities = models.ManyToManyField(Movie,
                                         through="fingo_statistics.UserActivity")
 
-    cover_img = models.ImageField(blank=True)
+    cover_img = models.ImageField(blank=True,
+                                  upload_to="cover_img")
+    cover_img_url = models.URLField(blank=True)
     # facebook_login
     facebook_id = models.CharField(max_length=50, blank=True)
     is_facebook = models.BooleanField(default=False)
