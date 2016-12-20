@@ -147,15 +147,15 @@ class FacebookUserImageUpload(generics.UpdateAPIView):
     queryset = FingoUser.objects.all()
     serializer_class = UserSerializer
 
-    def patch(self, request, *args, **kwargs):
-        user = self.get_queryset().get(email=request.auth.user)
-        if list(request.data.keys())[0] in "user_img":
-            user.user_img_url = request.data.get("user_img")
-        elif list(request.data.keys())[0] in "cover_img":
-            user.cover_img_url = request.data.get("cover_img")
-        user.save()
-
-        serial = self.get_serializer(user)
+    def partial_update(self, request, *args, **kwargs):
+        serial = self.get_serializer(instance=request.user,
+                                     data=request.data,
+                                     partial=True)
+        print(request.data)
+        print(serial.is_valid())
+        print(serial.errors)
+        if serial.is_valid():
+            serial.save()
 
         return Response(serial.data, status=status.HTTP_202_ACCEPTED)
 
