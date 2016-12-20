@@ -79,7 +79,7 @@ class UserProfileImgUpload(APIView):
 
     def patch(self, request, *args, **kwargs):
         user = request.auth.user
-        keys = list(request.FILES.keys())[0]
+        keys = list(request.data.keys())[0]
         if keys not in ["user_img", "cover_img"]:
             return Response({"error": "이미지를 선택하지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
         try:
