@@ -49,28 +49,54 @@ class MovieMainView(APIView):
         return Response({"data": ret_dic}, status=status.HTTP_200_OK)
 
 
-class MonthMovieList(APIView):
+class MonthMovieList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = SimpleMovieSerializer
+    pagination_class = None
 
-    def get(self, request, *args, **kwargs):
+    def get_queryset(self):
         this_month = datetime.now().month
         queryset = Movie.objects.filter(first_run_date__month=this_month)\
                        .order_by("score")[:10]
-        serial = SimpleMovieSerializer(queryset, many=True)
 
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        serial = self.get_serializer(self.get_queryset(), many=True)
         return Response({"data": serial.data}, status=status.HTTP_200_OK)
 
+    # def get(self, request, *args, **kwargs):
+    #     this_month = datetime.now().month
+    #     queryset = Movie.objects.filter(first_run_date__month=this_month)\
+    #                    .order_by("score")[:10]
+    #     serial = SimpleMovieSerializer(queryset, many=True)
+    #
+    #     return Response({"data": serial.data}, status=status.HTTP_200_OK)
 
-class GenreMovieList(APIView):
+
+class GenreMovieList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = SimpleMovieSerializer
+    pagination_class = None
 
-    def get(self, request, *args, **kwargs):
-        genre = request.query_params.get("genre")
-        queryset = Movie.objects.filter(genre__name=genre)\
+    def get_queryset(self):
+        genre = self.request.query_params.get("genre")
+        queryset = Movie.objects.filter(genre__name=genre) \
                        .order_by("score")[:10]
-        serial = SimpleMovieSerializer(queryset, many=True)
 
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        serial = self.get_serializer(self.get_queryset(), many=True)
         return Response({"data": serial.data}, status=status.HTTP_200_OK)
+
+    # def get(self, request, *args, **kwargs):
+    #     genre = request.query_params.get("genre")
+    #     queryset = Movie.objects.filter(genre__name=genre)\
+    #                    .order_by("score")[:10]
+    #     serial = SimpleMovieSerializer(queryset, many=True)
+    #
+    #     return Response({"data": serial.data}, status=status.HTTP_200_OK)
 
 
 class MovieDetail(generics.RetrieveAPIView):
@@ -92,32 +118,50 @@ class BoxofficeRankList(generics.ListAPIView):
         return Response({"data": serial.data}, status=status.HTTP_200_OK)
 
 
-class BoxofficeRankDetailList(APIView):
+class BoxofficeRankDetailList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = BoxofficeRankDetailSerializer
+    queryset = BoxofficeRank.objects.all()
+    pagination_class = None
 
     def get(self, request, *args, **kwargs):
-        ranking = BoxofficeRank.objects.all()
-        ranking_serial = BoxofficeRankDetailSerializer(ranking, many=True)
+        ranking = self.get_queryset()
+        ranking_serial = self.get_serializer(ranking, many=True)
         return Response({"data": ranking_serial.data}, status=status.HTTP_200_OK)
 
 
-class MovieSearch(APIView):
+class MovieSearch(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = SimpleMovieSerializer
 
-    def get(self, request, *args, **kwargs):
-        movie_name = request.query_params.get('q')
+    def get_queryset(self):
+        movie_name = self.request.query_params.get('q')
         # DB에 충분한 data가 쌓일 시 아래 코드 활성화
         # movies = Movie.objects.filter(title__contains=movie_name)
         # if list(movies) == []:
         #     movies = searchMixin.search_movie(movie_name)
         searchMixin.search_movie(movie_name)
         fingodb_movies = Movie.objects.filter(title__contains=movie_name)
-        paginator = api_settings.DEFAULT_PAGINATION_CLASS()
-        paginator.ordering = "pk"
-        paged_result = paginator.paginate_queryset(fingodb_movies, request)
-        serial = SimpleMovieSerializer(paged_result, many=True)
 
-        return paginator.get_paginated_response(serial.data)
+        self.paginator.ordering = "pk"
+
+        return fingodb_movies
+
+
+    # def get(self, request, *args, **kwargs):
+    #     movie_name = request.query_params.get('q')
+    #     # DB에 충분한 data가 쌓일 시 아래 코드 활성화
+    #     # movies = Movie.objects.filter(title__contains=movie_name)
+    #     # if list(movies) == []:
+    #     #     movies = searchMixin.search_movie(movie_name)
+    #     searchMixin.search_movie(movie_name)
+    #     fingodb_movies = Movie.objects.filter(title__contains=movie_name)
+    #     paginator = api_settings.DEFAULT_PAGINATION_CLASS()
+    #     paginator.ordering = "pk"
+    #     paged_result = paginator.paginate_queryset(fingodb_movies, request)
+    #     serial = SimpleMovieSerializer(paged_result, many=True)
+    #
+    #     return paginator.get_paginated_response(serial.data)
 
 
 class MovieWish(APIView):
@@ -171,16 +215,24 @@ class MovieWish(APIView):
 class MovieComments(generics.ListAPIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = MovieCommentsSerializer
-    queryset = UserActivity.objects.all()
 
-    def list(self, request, *args, **kwargs):
-        movie = kwargs.get("pk")
-        queryset = self.get_queryset().filter(movie=movie).exclude(comment=None).order_by("-activity_time")
+    def get_queryset(self):
+        movie = self.kwargs.get("pk")
+        queryset = UserActivity.objects.filter(movie=movie)\
+            .exclude(comment=None).order_by("-activity_time")
+
         self.paginator.ordering = "-activity_time"
-        page = self.paginate_queryset(queryset)
-        serial_data = self.get_serializer(page, many=True)
 
-        return self.get_paginated_response(serial_data.data)
+        return queryset
+
+    # def list(self, request, *args, **kwargs):
+    #     movie = kwargs.get("pk")
+    #     queryset = self.get_queryset().filter(movie=movie).exclude(comment=None).order_by("-activity_time")
+    #     self.paginator.ordering = "-activity_time"
+    #     page = self.paginate_queryset(queryset)
+    #     serial_data = self.get_serializer(page, many=True)
+    #
+    #     return self.get_paginated_response(serial_data.data)
 
 
     # def get(self, request, *args, **kwargs):
@@ -199,22 +251,25 @@ class MovieComments(generics.ListAPIView):
     #     return paginator.get_paginated_response(serial.data)
 
 
-class MovieAsUserComment(generics.RetrieveUpdateAPIView):
+class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserCommentCreateSerailizer
-    queryset = UserActivity.objects.all()
 
-    def retrieve(self, request, *args, **kwargs):
-        user = request.auth.user
+    def get_queryset(self):
+        user = self.request.auth.user
         try:
-            movie = Movie.objects.get(pk=kwargs.get("pk"))
+            movie = Movie.objects.get(pk=self.kwargs.get("pk"))
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             ua = UserActivity.objects.get(user=user, movie=movie)
         except UserActivity.DoesNotExist:
             return Response({"error": "별점 평가부터 진행해 주세요."}, status=status.HTTP_200_OK)
-        serial_data = UserCommentsSerializer(ua)
+
+        return ua
+
+    def retrieve(self, request, *args, **kwargs):
+        serial_data = UserCommentsSerializer(self.get_queryset())
 
         return Response(serial_data.data, status=status.HTTP_200_OK)
 
@@ -228,48 +283,56 @@ class MovieAsUserComment(generics.RetrieveUpdateAPIView):
     #
     #     return Response({"info": "댓글이 등록되었습니다"}, status=status.HTTP_201_CREATED)
 
-    def post(self, request, *args, **kwargs):
-        user = request.auth.user
-        movie = Movie.objects.get(pk=kwargs.get("pk"))
-        try:
-            ua = UserActivity.objects.get(user=user, movie=movie)
-        except UserActivity.DoesNotExist:
-            return Response({"error": "별점 평가부터 진행해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
-        if ua.comment is not None:
-            return Response({"error": "이미 있는 comment입니다."},
-                            status=status.HTTP_400_BAD_REQUEST)
-        else:
-            serializer = self.get_serializer(ua,
-                                             data=request.data,
-                                             partial=True)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED,
-                            headers=headers)
-
-    def patch(self, request, *args, **kwargs):
-        user = request.auth.user
-        movie = Movie.objects.get(pk=kwargs.get("pk"))
-        try:
-            ua = UserActivity.objects.get(user=user, movie=movie)
-        except:
-            return Response({"error": "수정할 댓글이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    def partial_update(self, request, *args, **kwargs):
+        ua = self.get_queryset()
         serial = self.get_serializer(ua,
                                      data=request.data,
                                      partial=True)
         if serial.is_valid(raise_exception=True):
-            self.perform_update(serial)
+            serial.save()
 
-        return Response({"info": serial.data}, status=status.HTTP_200_OK)
+        return Response(serial.data,
+                        status=status.HTTP_202_ACCEPTED)
 
-    def delete(self, request, *args, **kwargs):
-        user = request.auth.user
-        movie = Movie.objects.get(pk=kwargs.get("pk"))
-        user_activity = UserActivity.objects.get(user=user,
-                                                 movie=movie)
+    # def post(self, request, *args, **kwargs):
+    #     user = request.auth.user
+    #     movie = Movie.objects.get(pk=kwargs.get("pk"))
+    #     try:
+    #         ua = UserActivity.objects.get(user=user, movie=movie)
+    #     except UserActivity.DoesNotExist:
+    #         return Response({"error": "별점 평가부터 진행해 주세요."}, status=status.HTTP_400_BAD_REQUEST)
+    #     if ua.comment is not None:
+    #         return Response({"error": "이미 있는 comment입니다."},
+    #                         status=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         serializer = self.get_serializer(ua,
+    #                                          data=request.data,
+    #                                          partial=True)
+    #         if serializer.is_valid(raise_exception=True):
+    #             serializer.save()
+    #
+    #         headers = self.get_success_headers(serializer.data)
+    #         return Response(serializer.data,
+    #                         status=status.HTTP_201_CREATED,
+    #                         headers=headers)
+
+    # def patch(self, request, *args, **kwargs):
+    #     user = request.auth.user
+    #     movie = Movie.objects.get(pk=kwargs.get("pk"))
+    #     try:
+    #         ua = UserActivity.objects.get(user=user, movie=movie)
+    #     except:
+    #         return Response({"error": "수정할 댓글이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    #     serial = self.get_serializer(ua,
+    #                                  data=request.data,
+    #                                  partial=True)
+    #     if serial.is_valid(raise_exception=True):
+    #         self.perform_update(serial)
+    #
+    #     return Response({"info": serial.data}, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        user_activity = self.get_queryset()
 
         if user_activity.score is None and user_activity.wish_movie is False:
             user_activity.delete()
@@ -277,7 +340,7 @@ class MovieAsUserComment(generics.RetrieveUpdateAPIView):
             user_activity.comment = None
             user_activity.save()
 
-        return Response({"info": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        return Response({"info": "댓글이 삭제되었습니다."}, status=status.HTTP_202_ACCEPTED)
 
 
 class MovieScore(APIView):
@@ -324,14 +387,29 @@ class MovieScore(APIView):
             return Response({'error': 'score 값이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MovieRandomList(APIView):
+class MovieRandomList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = SimpleMovieSerializer
+    pagination_class = None
 
-    def get(self, request, *args, **kwargs):
-        user = request.user
+    def get_queryset(self):
+        user = self.request.user
         uas = UserActivity.objects.filter(user=user)
         movie_ids = [ua.movie.id for ua in uas]
         random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids, img=None)[:30]
-        serial = SimpleMovieSerializer(random_movies, many=True)
-        return Response({'data': serial.data}, status=status.HTTP_200_OK)
+
+        return random_movies
+
+    def list(self, request, *args, **kwargs):
+        serial = self.get_serializer(self.get_queryset(), many=True)
+        return Response({"data": serial.data}, status=status.HTTP_200_OK)
+
+
+    # def get(self, request, *args, **kwargs):
+    #     user = request.user
+    #     uas = UserActivity.objects.filter(user=user)
+    #     movie_ids = [ua.movie.id for ua in uas]
+    #     random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids, img=None)[:30]
+    #     serial = SimpleMovieSerializer(random_movies, many=True)
+    #     return Response({'data': serial.data}, status=status.HTTP_200_OK)
 
