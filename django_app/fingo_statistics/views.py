@@ -22,9 +22,9 @@ class UserDetailView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         user = request.auth.user
         user_profile = FingoUser.objects.get(email=user.email)
-        comment_cnt = self.get_object(user=user).exclude(comment=None).count()
-        watched_movie_cnt = self.get_object(user=user).exclude(watched_movie=False).count()
-        wish_movie_cnt = self.get_object(user=user).exclude(wish_movie=False).count()
+        comment_cnt = self.get_object().exclude(comment=None).count()
+        watched_movie_cnt = self.get_object().exclude(watched_movie=False).count()
+        wish_movie_cnt = self.get_object().exclude(wish_movie=False).count()
 
         user_profile_serial = self.get_serializer(user_profile)
 
@@ -90,12 +90,12 @@ class UserWatchedMoviesSelect(generics.ListAPIView, OrderingSelect):
         user = self.request.auth.user
         ordering_request = self.request.query_params.get("order")
         ordering = self.get_ordering_param(ordering_request)
-        user_wish_movies = UserActivity.objects.filter(user=user). \
-            filter(wish_movie=True).order_by(ordering)
+        user_watched_movies = UserActivity.objects.filter(user=user). \
+            filter(watched_movie=True).order_by(ordering)
         self.paginator.ordering = ordering
         self.paginator.page_size = 30
 
-        return user_wish_movies
+        return user_watched_movies
 
     # def get(self, request, *args, **kwargs):
     #     user = request.auth.user
