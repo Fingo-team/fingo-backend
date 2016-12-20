@@ -151,9 +151,6 @@ class FacebookUserImageUpload(generics.UpdateAPIView):
         serial = self.get_serializer(instance=request.user,
                                      data=request.data,
                                      partial=True)
-        print(request.data)
-        print(serial.is_valid())
-        print(serial.errors)
         if serial.is_valid():
             serial.save()
 
