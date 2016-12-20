@@ -46,7 +46,7 @@ class MovieMainView(APIView):
             "genre_movie_url": genre_movie_url
         }
 
-        return Response({"data": ret_dic})
+        return Response({"data": ret_dic}, status=status.HTTP_200_OK)
 
 
 class MonthMovieList(APIView):
@@ -58,7 +58,7 @@ class MonthMovieList(APIView):
                        .order_by("score")[:10]
         serial = SimpleMovieSerializer(queryset, many=True)
 
-        return Response({"data": serial.data})
+        return Response({"data": serial.data}, status=status.HTTP_200_OK)
 
 
 class GenreMovieList(APIView):
@@ -70,7 +70,7 @@ class GenreMovieList(APIView):
                        .order_by("score")[:10]
         serial = SimpleMovieSerializer(queryset, many=True)
 
-        return Response({"data": serial.data})
+        return Response({"data": serial.data}, status=status.HTTP_200_OK)
 
 
 class MovieDetail(generics.RetrieveAPIView):
@@ -89,7 +89,7 @@ class BoxofficeRankList(generics.ListAPIView):
         queryset = self.get_queryset()
         serial = self.get_serializer(queryset, many=True)
 
-        return Response({"data": serial.data})
+        return Response({"data": serial.data}, status=status.HTTP_200_OK)
 
 
 class BoxofficeRankDetailList(APIView):
@@ -98,7 +98,7 @@ class BoxofficeRankDetailList(APIView):
     def get(self, request, *args, **kwargs):
         ranking = BoxofficeRank.objects.all()
         ranking_serial = BoxofficeRankDetailSerializer(ranking, many=True)
-        return Response({"data": ranking_serial.data})
+        return Response({"data": ranking_serial.data}, status=status.HTTP_200_OK)
 
 
 class MovieSearch(APIView):
@@ -301,7 +301,7 @@ class MovieScore(APIView):
             movie = Movie.objects.get(pk=kwargs.get("pk"))
         except Movie.DoesNotExist:
             return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.auth.user
+        user = request.user
         active = UserActivity.objects.get_or_create(user=user,
                                                     movie=movie)[0]
         user_score = float(request.data.get("score"))
@@ -331,10 +331,7 @@ class MovieRandomList(APIView):
         user = request.user
         uas = UserActivity.objects.filter(user=user)
         movie_ids = [ua.movie.id for ua in uas]
-        random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids)[:30]
+        random_movies = Movie.objects.order_by("?").exclude(id__in=movie_ids, img=None)[:30]
         serial = SimpleMovieSerializer(random_movies, many=True)
-        ret = {
-            'data': serial.data
-        }
-        return Response(ret, status=status.HTTP_200_OK)
+        return Response({'data': serial.data}, status=status.HTTP_200_OK)
 
