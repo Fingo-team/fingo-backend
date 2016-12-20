@@ -12,17 +12,19 @@ from utils.movie.ordering_mixin import OrderingSelect
 class UserDetailView(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
+    queryset = UserActivity.objects.all()
 
-    def get_queryset(self):
-        ua = UserActivity.objects.filter(user=self.request.auth.user)
-        return ua
+    def get_object(self):
+        instance = self.get_queryset().filter(user=self.request.auth.user)
+
+        return instance
 
     def retrieve(self, request, *args, **kwargs):
         user = request.auth.user
         user_profile = FingoUser.objects.get(email=user.email)
-        comment_cnt = self.get_queryset(user=user).exclude(comment=None).count()
-        watched_movie_cnt = self.get_queryset(user=user).exclude(watched_movie=False).count()
-        wish_movie_cnt = self.get_queryset(user=user).exclude(wish_movie=False).count()
+        comment_cnt = self.get_object(user=user).exclude(comment=None).count()
+        watched_movie_cnt = self.get_object(user=user).exclude(watched_movie=False).count()
+        wish_movie_cnt = self.get_object(user=user).exclude(wish_movie=False).count()
 
         user_profile_serial = self.get_serializer(user_profile)
 

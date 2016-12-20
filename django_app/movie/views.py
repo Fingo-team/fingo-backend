@@ -124,7 +124,7 @@ class BoxofficeRankDetailList(generics.ListAPIView):
     queryset = BoxofficeRank.objects.all()
     pagination_class = None
 
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         ranking = self.get_queryset()
         ranking_serial = self.get_serializer(ranking, many=True)
         return Response({"data": ranking_serial.data}, status=status.HTTP_200_OK)
@@ -254,22 +254,17 @@ class MovieComments(generics.ListAPIView):
 class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserCommentCreateSerailizer
+    queryset = UserActivity.objects.all()
 
-    def get_queryset(self):
+    def get_object(self):
         user = self.request.auth.user
-        try:
-            movie = Movie.objects.get(pk=self.kwargs.get("pk"))
-        except Movie.DoesNotExist:
-            return Response({'error': '해당 영화가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            ua = UserActivity.objects.get(user=user, movie=movie)
-        except UserActivity.DoesNotExist:
-            return Response({"error": "별점 평가부터 진행해 주세요."}, status=status.HTTP_200_OK)
+        movie = Movie.objects.get(pk=self.kwargs.get("pk"))
+        instance = self.get_queryset().get(user=user, movie=movie)
 
-        return ua
+        return instance
 
     def retrieve(self, request, *args, **kwargs):
-        serial_data = UserCommentsSerializer(self.get_queryset())
+        serial_data = UserCommentsSerializer(self.get_object())
 
         return Response(serial_data.data, status=status.HTTP_200_OK)
 
@@ -284,7 +279,7 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView):
     #     return Response({"info": "댓글이 등록되었습니다"}, status=status.HTTP_201_CREATED)
 
     def partial_update(self, request, *args, **kwargs):
-        ua = self.get_queryset()
+        ua = self.get_object()
         serial = self.get_serializer(ua,
                                      data=request.data,
                                      partial=True)
@@ -332,7 +327,7 @@ class MovieAsUserComment(generics.RetrieveUpdateDestroyAPIView):
     #     return Response({"info": serial.data}, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
-        user_activity = self.get_queryset()
+        user_activity = self.get_object()
 
         if user_activity.score is None and user_activity.wish_movie is False:
             user_activity.delete()
