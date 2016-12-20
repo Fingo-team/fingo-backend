@@ -22,9 +22,9 @@ class UserDetailView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         user = request.auth.user
         user_profile = FingoUser.objects.get(email=user.email)
-        comment_cnt = self.get_object(user=user).exclude(comment=None).count()
-        watched_movie_cnt = self.get_object(user=user).exclude(watched_movie=False).count()
-        wish_movie_cnt = self.get_object(user=user).exclude(wish_movie=False).count()
+        comment_cnt = self.get_object().exclude(comment=None).count()
+        watched_movie_cnt = self.get_object().exclude(watched_movie=False).count()
+        wish_movie_cnt = self.get_object().exclude(wish_movie=False).count()
 
         user_profile_serial = self.get_serializer(user_profile)
 
