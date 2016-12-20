@@ -17,16 +17,15 @@ from utils.image_file.resizing_image import create_thumbnail
 
 
 class UserLogin(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         serial_data = UserLoginSerializer(request.data)
         fingo_user = authenticate(email=serial_data.data["email"],
                                   password=serial_data.data["password"])
-
         if fingo_user:
             token = Token.objects.get_or_create(user=fingo_user)[0]
-            ret = {"token": token.key}
-            return Response(ret, status=status.HTTP_200_OK)
+            return Response({"token": token.key}, status=status.HTTP_200_OK)
         return Response({"error": "아이디 혹은 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -34,7 +33,6 @@ class UserLogout(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-
         if request.user:
             request.user.auth_token.delete()
             return Response({"info": "정상적으로 로그아웃 되었습니다."}, status=status.HTTP_200_OK)
@@ -53,15 +51,15 @@ class UserSignUp(generics.CreateAPIView):
             except IntegrityError as e:
                 if "email" in str(e):
                     return Response({"error": "이미 존재하는 email 입니다."}, status=status.HTTP_400_BAD_REQUEST)
-
             else:
                 return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
-
         else:
             return Response({'info': '입력형식이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserActivate(APIView):
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
 
         hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")+settings.SECRET_KEY
@@ -93,6 +91,7 @@ class UserProfileImgUpload(APIView):
 
 
 class UserFacebookLogin(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         access_token = request.data.get("access_token")
@@ -113,19 +112,18 @@ class UserFacebookLogin(APIView):
                 facebook_user = FingoUser.objects.create_facebook_user(facebook_id=user_id,
                                                                        nickname=user_info['name'])
             token = Token.objects.get_or_create(user=facebook_user)[0]
-            ret = {"token": token.key}
-            return Response(ret, status=status.HTTP_200_OK)
+            return Response({"token": token.key}, status=status.HTTP_200_OK)
         else:
-            return Response({'error': debug_token['data']['error']['message']})
+            return Response({'error': debug_token['data']['error']['message']}, status=status.HTTP_400_BAD_REQUEST)
 
     def get_user_info(self, user_id, access_token):
         url_request_user_info = 'https://graph.facebook.com/' \
                                 '{user_id}?' \
                                 'fields=id,name&' \
                                 'access_token={access_token}'.format(
-            user_id=user_id,
-            access_token=access_token
-        )
+                                    user_id=user_id,
+                                    access_token=access_token
+                                )
         r = requests.get(url_request_user_info)
         user_info = r.json()
         return user_info
