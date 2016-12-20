@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.files.base import ContentFile
 
-from member.serializations import UserCreateSerializer, UserLoginSerializer
+from member.serializations import UserCreateSerializer, UserLoginSerializer, UserSerializer
 from member.models import FingoUser, UserHash
 from utils.image_file.resizing_image import create_thumbnail
 
@@ -77,16 +77,29 @@ class UserActivate(APIView):
 class UserProfileImgUpload(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         user = request.auth.user
         try:
-            user_img = request.FILES["user_img"]
-        except MultiValueDictKeyError:
-            return Response({"error": "이미지를 선택하지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            temp_img, img_name = create_thumbnail(user_img)
+            keys = list(request.FILES.keys())[0]
+        except:
+            return Response({"error": "Dose Not Choice {}".format(keys)})
+        if keys not in ["user_img", "cover_img"]:
+            return Response({"error": "이미지를 선택하지 않았습니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            image = request.FILES["user_img"]
+            temp_img, img_name = create_thumbnail(image=image, kind=keys)
             content_file = ContentFile(temp_img.read())
             user.user_img.save(img_name+".jpg", content_file)
+            user.user_img_url = user.user_img.url
+        except MultiValueDictKeyError:
+            image = request.FILES["cover_img"]
+            temp_img, img_name = create_thumbnail(image, kind=keys)
+            content_file = ContentFile(temp_img.read())
+            user.cover_img.save(img_name+".jpg", content_file)
+            user.cover_img_url = user.user_img.url
+        finally:
+            user.save()
             temp_img.close()
             content_file.close()
         return Response({"info": "프로필 이미지를 등록하였습니다."}, status=status.HTTP_201_CREATED)
@@ -129,3 +142,22 @@ class UserFacebookLogin(APIView):
         r = requests.get(url_request_user_info)
         user_info = r.json()
         return user_info
+
+
+class FacebookUserImageUpload(generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = FingoUser.objects.all()
+    serializer_class = UserSerializer
+
+    def patch(self, request, *args, **kwargs):
+        user = self.get_queryset().get(email=request.auth.user)
+        if list(request.data.keys())[0] in "user_img":
+            user.user_img_url = request.data.get("user_img")
+        elif list(request.data.keys())[0] in "cover_img":
+            user.cover_img_url = request.data.get("cover_img")
+        user.save()
+
+        serial = self.get_serializer(user)
+
+        return Response(serial.data, status=status.HTTP_202_ACCEPTED)
+
