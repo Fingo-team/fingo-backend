@@ -80,9 +80,9 @@ class UserProfileImgUpload(APIView):
     def patch(self, request, *args, **kwargs):
         user = request.auth.user
         try:
-            keys = list(request.data.keys())[0]
+            keys = list(request.FILES.keys())[0]
         except:
-            return Response({"error": keys()})
+            return Response({"error": "Dose Not Choice {}".format(keys)})
         if keys not in ["user_img", "cover_img"]:
             return Response({"error": "이미지를 선택하지 않았습니다."},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -91,13 +91,13 @@ class UserProfileImgUpload(APIView):
             temp_img, img_name = create_thumbnail(image=image, kind=keys)
             content_file = ContentFile(temp_img.read())
             user.user_img.save(img_name+".jpg", content_file)
-            user.user_img_url = user.user_img.path
+            user.user_img_url = user.user_img.url
         except MultiValueDictKeyError:
             image = request.FILES["cover_img"]
             temp_img, img_name = create_thumbnail(image, kind=keys)
             content_file = ContentFile(temp_img.read())
             user.cover_img.save(img_name+".jpg", content_file)
-            user.cover_img_url = user.user_img.path
+            user.cover_img_url = user.user_img.url
         finally:
             user.save()
             temp_img.close()
