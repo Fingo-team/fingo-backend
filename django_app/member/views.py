@@ -95,7 +95,7 @@ class UserProfileImgUpload(APIView):
             temp_img, img_name = create_thumbnail(image, kind=keys)
             content_file = ContentFile(temp_img.read())
             user.cover_img.save(img_name+".jpg", content_file)
-            user.cover_img_url = user.user_img.url
+            user.cover_img_url = user.cover_img.url
         finally:
             user.save()
             temp_img.close()
