@@ -9,7 +9,7 @@ __all__ = [
 
 def send_activation_mail(user_email, hashed_email):
     hashed_email = hashed_email.replace("$pbkdf2-sha512$8000$", "")
-    activate_url = "http://eb-fingo-real.ap-northeast-2.elasticbeanstalk.com/api/v1.0/user/activate/{hashed_email}/".format(hashed_email=hashed_email)
+    activate_url = "http://unripers.com/api/v1.0/user/activate/{hashed_email}/".format(hashed_email=hashed_email)
     send_mail(
         "Fingo Service activation mail",
         """
@@ -20,4 +20,3 @@ def send_activation_mail(user_email, hashed_email):
         settings.DEFAULT_FROM_EMAIL,
         [user_email],
     )
-    print("send mail!")

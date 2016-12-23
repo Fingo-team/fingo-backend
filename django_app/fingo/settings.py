@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os, sys
 import json
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,7 +44,9 @@ AUTH_USER_MODEL = "member.fingouser"
 
 ALLOWED_HOSTS = [
     "eb-fingo-real.ap-northeast-2.elasticbeanstalk.com",
-    "fingo-dev.ap-northeast-2.elasticbeanstalk.com"
+    "fingo2-dev.ap-northeast-2.elasticbeanstalk.com",
+    ".unripers.com",
+    ".stardustrain.com",
 ]
 
 
@@ -66,6 +69,7 @@ INSTALLED_APPS = [
     'member',
     'movie',
     'fingo_statistics',
+    'user_statistics',
 ]
 
 
@@ -76,20 +80,19 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
-    'PAGE_SIZE': 1
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'fingo.urls'
@@ -114,7 +117,8 @@ WSGI_APPLICATION = 'fingo.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+# https://docs.djangoproject.com/en/1.10/ref/settings/
+# databases
 if DEBUG:
     DATABASES = {
         'default': {
@@ -165,6 +169,7 @@ USE_TZ = True
 # CORS Settings
 CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
+    'fingo.herokuapp.com',
 )
 
 CORS_ALLOW_METHODS = (

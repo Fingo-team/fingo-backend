@@ -1,9 +1,10 @@
-from django.core.management.base import BaseCommand
-from movie.management.commands import crawlingMixin
-import requests
 import time
+import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
+from django.core.management.base import BaseCommand
+
+from utils.movie import searchMixin
 
 
 def get_all_moviename(page_num):
@@ -26,15 +27,15 @@ def get_all_moviename(page_num):
 def init_naver_movie():
     movie_arr = [
         get_all_moviename(page_num=page_num)
-        for page_num in range(1, 3)
+        for page_num in range(1, 40+1)
         ]
 
     for page_num in range(len(movie_arr)):
         time.sleep(10)
         for cnt, movie in enumerate(movie_arr[page_num]):
             if cnt != 0 and cnt % 10 == 0:
-                time.sleep(10)
-            crawlingMixin.insert_db(movie)
+                time.sleep(1)
+            searchMixin.search_movie(movie[1])
             time.sleep(1)
 
 

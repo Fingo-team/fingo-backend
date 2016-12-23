@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from movie.models import Movie
 from passlib.hash import pbkdf2_sha512
-from apis.mail import send_auth_mail
+from utils.mail import send_auth_mail
 
 
 class FingoUserManager(BaseUserManager):
@@ -59,10 +59,13 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=False)
     user_img = models.ImageField(blank=True,
                                  upload_to="user_img")
+    user_img_url = models.URLField(blank=True)
     activities = models.ManyToManyField(Movie,
                                         through="fingo_statistics.UserActivity")
 
-    cover_img = models.ImageField(blank=True)
+    cover_img = models.ImageField(blank=True,
+                                  upload_to="cover_img")
+    cover_img_url = models.URLField(blank=True)
     # facebook_login
     facebook_id = models.CharField(max_length=50, blank=True)
     is_facebook = models.BooleanField(default=False)
@@ -80,5 +83,6 @@ class FingoUser(AbstractBaseUser, PermissionsMixin):
 
 
 class UserHash(models.Model):
-    user = models.ForeignKey(FingoUser)
+    user = models.ForeignKey(FingoUser,
+                             on_delete=models.CASCADE)
     hashed_email = models.CharField(max_length=200)

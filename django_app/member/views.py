@@ -1,7 +1,7 @@
 import requests
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
@@ -11,23 +11,21 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.files.base import ContentFile
 
-from member.forms import FingoUserForm, UserSignupForm
+from member.serializations import UserCreateSerializer, UserLoginSerializer, UserSerializer
 from member.models import FingoUser, UserHash
-from apis.image_file.resizing_image import create_thumbnail
+from utils.image_file.resizing_image import create_thumbnail
 
 
 class UserLogin(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        form = FingoUserForm(data=request.POST)
-        if form.is_valid():
-            fingo_user = authenticate(email=form.cleaned_data["email"],
-                                      password=form.cleaned_data["password"])
-
-            if fingo_user:
-                token = Token.objects.get_or_create(user=fingo_user)[0]
-                ret = {"token": token.key}
-                return Response(ret, status=status.HTTP_200_OK)
+        serial_data = UserLoginSerializer(request.data)
+        fingo_user = authenticate(email=serial_data.data["email"],
+                                  password=serial_data.data["password"])
+        if fingo_user:
+            token = Token.objects.get_or_create(user=fingo_user)[0]
+            return Response({"token": token.key}, status=status.HTTP_200_OK)
         return Response({"error": "아이디 혹은 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -35,32 +33,33 @@ class UserLogout(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-
-        if request.user.auth:
+        if request.user:
             request.user.auth_token.delete()
-            return Response({"info": "정상적으로 로그인 되었습니다."}, status=status.HTTP_200_OK)
+            return Response({"info": "정상적으로 로그아웃 되었습니다."}, status=status.HTTP_200_OK)
         return Response({"error": "이미 로그아웃 되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserSignUp(APIView):
+class UserSignUp(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserCreateSerializer
 
-    def post(self, request, *args, **kwargs):
-        form = UserSignupForm(data=request.POST)
-        if form.is_valid():
+    def create(self, request, *args, **kwargs):
+        serial_data = self.get_serializer(data=request.data)
+        if serial_data.is_valid():
             try:
-                FingoUser.objects.create_user(email=form.cleaned_data["email"],
-                                              password=form.cleaned_data["password"],
-                                              nickname=form.cleaned_data["nickname"])
+                serial_data.save()
             except IntegrityError as e:
                 if "email" in str(e):
                     return Response({"error": "이미 존재하는 email 입니다."}, status=status.HTTP_400_BAD_REQUEST)
-                elif "nickname" in str(e):
-                    return Response({"error": "이미 존재하는 nickname 입니다."}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({"info": "인증메일이 발송 되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response({'info': '입력형식이 올바르지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserActivate(APIView):
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
 
         hashed_email = "$pbkdf2-sha512$8000$"+kwargs.get("hash")+settings.SECRET_KEY
@@ -76,25 +75,39 @@ class UserActivate(APIView):
 class UserProfileImgUpload(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         user = request.auth.user
         try:
-            user_img = request.FILES["user_img"]
-        except MultiValueDictKeyError:
-            return Response({"error": "이미지를 선택하지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            temp_img, img_name = create_thumbnail(user_img)
+            keys = list(request.FILES.keys())[0]
+        except:
+            return Response({"error": "Dose Not Choice {}".format(keys)})
+        if keys not in ["user_img", "cover_img"]:
+            return Response({"error": "이미지를 선택하지 않았습니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            image = request.FILES["user_img"]
+            temp_img, img_name = create_thumbnail(image=image, kind=keys)
             content_file = ContentFile(temp_img.read())
             user.user_img.save(img_name+".jpg", content_file)
+            user.user_img_url = user.user_img.url
+        except MultiValueDictKeyError:
+            image = request.FILES["cover_img"]
+            temp_img, img_name = create_thumbnail(image, kind=keys)
+            content_file = ContentFile(temp_img.read())
+            user.cover_img.save(img_name+".jpg", content_file)
+            user.cover_img_url = user.cover_img.url
+        finally:
+            user.save()
             temp_img.close()
             content_file.close()
         return Response({"info": "프로필 이미지를 등록하였습니다."}, status=status.HTTP_201_CREATED)
 
 
 class UserFacebookLogin(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        access_token = request.POST.get("access_token")
+        access_token = request.data.get("access_token")
         url_debug_token = 'https://graph.facebook.com/debug_token?' \
                           'input_token={it}&' \
                           'access_token={at}'.format(
@@ -112,19 +125,34 @@ class UserFacebookLogin(APIView):
                 facebook_user = FingoUser.objects.create_facebook_user(facebook_id=user_id,
                                                                        nickname=user_info['name'])
             token = Token.objects.get_or_create(user=facebook_user)[0]
-            ret = {"token": token.key}
-            return Response(ret, status=status.HTTP_200_OK)
+            return Response({"token": token.key}, status=status.HTTP_200_OK)
         else:
-            return Response({'error': debug_token['data']['error']['message']})
+            return Response({'error': debug_token['data']['error']['message']}, status=status.HTTP_400_BAD_REQUEST)
 
     def get_user_info(self, user_id, access_token):
         url_request_user_info = 'https://graph.facebook.com/' \
                                 '{user_id}?' \
                                 'fields=id,name&' \
                                 'access_token={access_token}'.format(
-            user_id=user_id,
-            access_token=access_token
-        )
+                                    user_id=user_id,
+                                    access_token=access_token
+                                )
         r = requests.get(url_request_user_info)
         user_info = r.json()
         return user_info
+
+
+class FacebookUserImageUpload(generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = FingoUser.objects.all()
+    serializer_class = UserSerializer
+
+    def partial_update(self, request, *args, **kwargs):
+        serial = self.get_serializer(instance=request.user,
+                                     data=request.data,
+                                     partial=True)
+        if serial.is_valid():
+            serial.save()
+
+        return Response(serial.data, status=status.HTTP_202_ACCEPTED)
+
